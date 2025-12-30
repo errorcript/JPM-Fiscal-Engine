@@ -40,7 +40,7 @@ if (typeof window !== 'undefined') {
 
     // Safety Listener for Multi-Tab Sync Conflict
     window.addEventListener('storage', (e) => {
-        if (e.key === 'NEOMA_RESET_LOCK' && e.newValue === 'true') {
+        if (e.key === 'JPM_RESET_LOCK' && e.newValue === 'true') {
             console.log("🛑 Reset detected in another tab. Reloading to prevent conflicts...");
             document.body.innerHTML = '<div style="padding:2rem; text-align:center;"><h1>⚠️ RESET IN PROGRESS...</h1><p>Reset sedang berjalan di tab lain. Halaman akan dimuat ulang...</p></div>';
             setTimeout(() => location.reload(), 1500);
@@ -128,13 +128,13 @@ const DB = {
 
         // Auto Sync every 5 mins
         setInterval(() => {
-            const isLocked = localStorage.getItem('NEOMA_RESET_LOCK');
+            const isLocked = localStorage.getItem('JPM_RESET_LOCK');
             // Check navigator.onLine before attempting sync to reduce noise
             if (supabaseClient && !DB.isResetting && !isLocked && navigator.onLine) DB.syncCloudFull();
         }, 5 * 60 * 1000);
 
         // Initial Sync Strategy
-        const isLocked = localStorage.getItem('NEOMA_RESET_LOCK');
+        const isLocked = localStorage.getItem('JPM_RESET_LOCK');
         if (isLocked) {
             console.warn("⚠️ Sync blocked by Reset Lock.");
             return true;
@@ -176,7 +176,7 @@ const DB = {
         if (DB.isResetting) return;
 
         const { eventType, new: newRec, old: oldRec } = payload;
-        const isLocked = localStorage.getItem('NEOMA_RESET_LOCK');
+        const isLocked = localStorage.getItem('JPM_RESET_LOCK');
 
         // 2. Jika ada Tab LAIN sedang Reset (Lock aktif):
         // - TOLAK 'INSERT'/'UPDATE' (Supaya data zombie gak masuk)
@@ -212,7 +212,7 @@ const DB = {
 
             DB.saveToLocalStorage();
             // Broadcast event agar UI bisa update otomatis jika mendengarkan
-            if (typeof window !== 'undefined') window.dispatchEvent(new Event('NEOMA_DB_UPDATE'));
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('JPM_DB_UPDATE'));
 
         } catch (e) {
             console.error("Realtime Error:", e);
@@ -220,13 +220,13 @@ const DB = {
     },
 
     syncCloudFull: async () => {
-        if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) {
+        if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) {
             console.warn("⛔ Sync Aborted: Reset in progress.");
             return false;
         }
         try {
             // Load Tombstones (Deleted data that stubbornly exists in cloud)
-            const tombstones = JSON.parse(localStorage.getItem('NEOMA_TOMBSTONES') || '[]');
+            const tombstones = JSON.parse(localStorage.getItem('JPM_TOMBSTONES') || '[]');
 
             // First, push local changes
             if (navigator.onLine) await DB.syncLocalToCloud();
@@ -296,17 +296,17 @@ const DB = {
         try {
             console.log("Mengunggah data lokal ke cloud...");
             for (const t of CACHE.transactions) {
-                if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) return;
+                if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) return;
                 await supabaseClient.from('transactions').upsert({ id: t.id, data: t });
             }
             for (const j of CACHE.journals) {
-                if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) return;
+                if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) return;
                 await supabaseClient.from('journals').upsert({ id: j.id, data: j });
             }
             // Sync Customers
             if (CACHE.customers.length > 0) {
                 for (const c of CACHE.customers) {
-                    if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) return;
+                    if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) return;
                     const { error } = await supabaseClient.from('customers').upsert({ id: c.id, data: c });
                     if (error && error.code !== '42P01') console.error("Gagal Cloud Customer:", error);
                 }
@@ -315,7 +315,7 @@ const DB = {
             // Sync Tax 23
             if (CACHE.tax23Payments.length > 0) {
                 for (const tx of CACHE.tax23Payments) {
-                    if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) return;
+                    if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) return;
                     try {
                         await supabaseClient.from('tax23Payments').upsert({ id: tx.id, data: tx });
                     } catch (e) { console.warn("Tax23 Cloud Save Failed (Table Missing?)"); }
@@ -325,7 +325,7 @@ const DB = {
             // Sync Employees
             if (CACHE.employees.length > 0) {
                 for (const emp of CACHE.employees) {
-                    if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) return;
+                    if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) return;
                     await supabaseClient.from('employees').upsert({ id: emp.id, data: emp }).catch(e => console.warn("Employee Cloud Fail"));
                 }
             }
@@ -616,7 +616,7 @@ const DB = {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `NEOMA_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
+            a.download = `JPM_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -628,7 +628,7 @@ const DB = {
                 if (code === 'HAPUS') {
                     document.body.style.cursor = 'wait';
                     DB.isResetting = true;
-                    localStorage.setItem('NEOMA_RESET_LOCK', 'true');
+                    localStorage.setItem('JPM_RESET_LOCK', 'true');
 
                     // 1. Clear Local State
                     CACHE.transactions = [];
@@ -656,9 +656,9 @@ const DB = {
                             console.log(`Found ${txIds.length} Tx and ${jnIds.length} Journals to kill.`);
 
                             // 3. MARK AS "TOMBSTONES" (Persistent Client-Side Blacklist)
-                            const oldTombstones = JSON.parse(localStorage.getItem('NEOMA_TOMBSTONES') || '[]');
+                            const oldTombstones = JSON.parse(localStorage.getItem('JPM_TOMBSTONES') || '[]');
                             const newTombstones = [...new Set([...oldTombstones, ...txIds, ...jnIds])];
-                            localStorage.setItem('NEOMA_TOMBSTONES', JSON.stringify(newTombstones));
+                            localStorage.setItem('JPM_TOMBSTONES', JSON.stringify(newTombstones));
 
                             // 4. ATTEMPT REAL CLOUD DELETE (Best Effort, Chunked)
                             const deleteBatch = async (table, ids) => {
@@ -678,19 +678,19 @@ const DB = {
                             await deleteBatch('transactions', txIds);
 
                             console.log("✅ Cleanup Sequence Finished.");
-                            localStorage.removeItem('NEOMA_RESET_LOCK');
+                            localStorage.removeItem('JPM_RESET_LOCK');
                             alert("✅ Reset Berhasil! Database telah dibersihkan.");
                             location.reload();
 
                         } catch (e) {
                             console.error("Cloud Reset Error:", e);
-                            localStorage.removeItem('NEOMA_RESET_LOCK');
+                            localStorage.removeItem('JPM_RESET_LOCK');
                             // Even if error, we reload because Tombstones should hide the data.
                             alert("✅ Reset Selesai (Data lama disembunyikan).");
                             location.reload();
                         }
                     } else {
-                        localStorage.removeItem('NEOMA_RESET_LOCK');
+                        localStorage.removeItem('JPM_RESET_LOCK');
                         alert("✅ Reset Berhasil (Mode Offline).");
                         location.reload();
                     }

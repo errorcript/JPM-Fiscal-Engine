@@ -1,7 +1,7 @@
 {
-    "name": "neoma-invoice-system",
+    "name": "jpm-fiscal-engine",
     "version": "1.0.1",
-    "description": "Sistem Invoice & Akuntansi Sederhana untuk UMKM",
+    "description": "The Independent Financial Backbone for PT Jaya Perkasa Mandalika",
     "main": "index.html",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,10 +9,11 @@
     "keywords": [
         "invoice",
         "accounting",
-        "umkm",
-        "neoma"
+        "fiskal",
+        "jpm",
+        "websitegan"
     ],
-    "author": "Neoma Creative",
+    "author": "PT Jaya Perkasa Mandalika",
     "license": "ISC",
     "dependencies": {
         "@supabase/supabase-js": "^2.39.0",

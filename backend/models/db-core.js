@@ -79,12 +79,12 @@ const DB = {
 
         // Auto Sync Loop
         setInterval(() => {
-            const isLocked = localStorage.getItem('NEOMA_RESET_LOCK');
+            const isLocked = localStorage.getItem('JPM_RESET_LOCK');
             if (window.supabaseClient && !DB.isResetting && !isLocked && navigator.onLine) DB.syncCloudFull();
         }, 5 * 60 * 1000);
 
         // Initial Data Load
-        const isLocked = localStorage.getItem('NEOMA_RESET_LOCK');
+        const isLocked = localStorage.getItem('JPM_RESET_LOCK');
         if (isLocked) {
             console.warn("⚠️ Sync blocked by Reset Lock.");
             return true;
@@ -128,7 +128,7 @@ const DB = {
     handleRealtime: (table, payload) => {
         if (DB.isResetting) return;
         const { eventType, new: newRec, old: oldRec } = payload;
-        const isLocked = localStorage.getItem('NEOMA_RESET_LOCK');
+        const isLocked = localStorage.getItem('JPM_RESET_LOCK');
 
         if (isLocked && eventType !== 'DELETE') return; // Block inserts during reset
 
@@ -150,14 +150,14 @@ const DB = {
                 else if (table === 'journals') CACHE.journals = CACHE.journals.filter(j => j.id !== oldRec.id);
             }
             DB.saveToLocalStorage();
-            if (typeof window !== 'undefined') window.dispatchEvent(new Event('NEOMA_DB_UPDATE'));
+            if (typeof window !== 'undefined') window.dispatchEvent(new Event('JPM_DB_UPDATE'));
         } catch (e) { console.error("Realtime Error:", e); }
     },
 
     syncCloudFull: async () => {
-        if (DB.isResetting || localStorage.getItem('NEOMA_RESET_LOCK')) return false;
+        if (DB.isResetting || localStorage.getItem('JPM_RESET_LOCK')) return false;
         try {
-            const tombstones = JSON.parse(localStorage.getItem('NEOMA_TOMBSTONES') || '[]');
+            const tombstones = JSON.parse(localStorage.getItem('JPM_TOMBSTONES') || '[]');
             if (navigator.onLine) await DB.syncLocalToCloud(); // Push first
 
             if (!window.supabaseClient || !navigator.onLine) return false;
@@ -238,7 +238,7 @@ const DB = {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `NEOMA_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
+            a.download = `JPM_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -250,7 +250,7 @@ const DB = {
                 if (code === 'HAPUS') {
                     document.body.style.cursor = 'wait';
                     DB.isResetting = true;
-                    localStorage.setItem('NEOMA_RESET_LOCK', 'true');
+                    localStorage.setItem('JPM_RESET_LOCK', 'true');
 
                     // 1. Clear Local State (Keep Customers/Employees/Settings)
                     window.CACHE.transactions = [];
@@ -287,9 +287,9 @@ const DB = {
                             console.log(`Found ${txIds.length} Tx, ${jnIds.length} Journals, ${taxIds.length} Taxes to kill.`);
 
                             // 3. MARK AS "TOMBSTONES" (Persistent Client-Side Blacklist)
-                            const oldTombstones = JSON.parse(localStorage.getItem('NEOMA_TOMBSTONES') || '[]');
+                            const oldTombstones = JSON.parse(localStorage.getItem('JPM_TOMBSTONES') || '[]');
                             const newTombstones = [...new Set([...oldTombstones, ...txIds, ...jnIds, ...pyIds, ...exIds, ...taxIds])];
-                            localStorage.setItem('NEOMA_TOMBSTONES', JSON.stringify(newTombstones));
+                            localStorage.setItem('JPM_TOMBSTONES', JSON.stringify(newTombstones));
 
                             // 4. ATTEMPT REAL CLOUD DELETE (Best Effort)
                             const deleteBatch = async (table, ids) => {
@@ -308,18 +308,18 @@ const DB = {
                             await deleteBatch('tax23Payments', taxIds);
 
                             console.log("✅ Cleanup Sequence Finished.");
-                            localStorage.removeItem('NEOMA_RESET_LOCK');
+                            localStorage.removeItem('JPM_RESET_LOCK');
                             alert("✅ Reset Berhasil! Database telah dibersihkan.");
                             location.reload();
 
                         } catch (e) {
                             console.error("Cloud Reset Error:", e);
-                            localStorage.removeItem('NEOMA_RESET_LOCK');
+                            localStorage.removeItem('JPM_RESET_LOCK');
                             alert("✅ Reset Selesai (Data lama disembunyikan).");
                             location.reload();
                         }
                     } else {
-                        localStorage.removeItem('NEOMA_RESET_LOCK');
+                        localStorage.removeItem('JPM_RESET_LOCK');
                         alert("✅ Reset Berhasil (Mode Offline).");
                         location.reload();
                     }

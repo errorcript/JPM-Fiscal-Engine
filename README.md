@@ -9,7 +9,7 @@
 ## 📜 Deskripsi Proyek
 **JPM Fiscal Engine** adalah sistem automasi finansial mandiri yang dirancang khusus untuk mengelola seluruh ekosistem keuangan, perpajakan, dan distribusi profit internal **PT Jaya Perkasa Mandalika (Websitegan)**. 
 
-Aplikasi ini berdiri sepenuhnya sebagai aset internal perusahaan untuk menjamin efisiensi operasional, transparansi bagi hasil, dan kepatuhan fiskal yang presisi. Proyek ini **BUKAN** merupakan bagian dari lini produk Neoma dan beroperasi secara independen untuk kebutuhan eksklusif PT JPM.
+Aplikasi ini berdiri sepenuhnya sebagai aset internal perusahaan untuk menjamin efisiensi operasional, transparansi bagi hasil, dan kepatuhan fiskal yang presisi. Proyek ini beroperasi secara eksklusif untuk kebutuhan internal PT JPM.
 
 ---
 
@@ -73,7 +73,6 @@ Aplikasi ini berdiri sepenuhnya sebagai aset internal perusahaan untuk menjamin 
 
 ---
 
-## ⚖️ Pernyataan Independensi
 Proyek ini dikembangkan dan dikelola sepenuhnya oleh tim developer **PT Jaya Perkasa Mandalika**. Seluruh integrasi dengan layanan eksternal (seperti Errorscript Financial) bersifat opsional dan merupakan fitur sinkronisasi data sekunder. JPM Fiscal Engine adalah entitas teknologi terpisah yang berfokus pada kekuatan finansial internal perusahaan.
 
 ---

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Keuangan - Neoma Creative Hub</title>
+    <title>Laporan Keuangan - JPM Fiscal Engine</title>
     <link rel="stylesheet" href="../assets/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <!-- Html2Pdf Library (Legacy Support) -->
@@ -335,7 +335,7 @@
 
             <!-- PRINT HEADER -->
             <div class="print-header">
-                <h2 style="margin-bottom:5px; text-transform:uppercase;">Neoma Creative Hub</h2>
+                <h2 style=\"margin-bottom:5px; text-transform:uppercase;\">PT JAYA PERKASA MANDALIKA</h2>
                 <p style="margin:0; font-size:0.9rem;">Gedongan RW II, Kec. Baki, Sukoharjo • NIB: 1234567890</p>
                 <div style="border-bottom: 2px double black; margin: 15px 0;"></div>
                 <h3 style="margin:0;">LAPORAN KEUANGAN (SAK EMKM)</h3>
@@ -983,10 +983,10 @@
                                     <div style="margin-bottom: 5px;">
                                         <!-- REAL LOGO (Base64 Injected Directly) -->
                                         <img 
-                                            src="${window.NEOMA_LOGO_BASE64 || '../assets/neoma-logo.png'}"
-                                            alt="NEOMA CREATIVE HUB"
+                                            src="${window.JPM_LOGO_BASE64 || '../assets/jpm-logo.png'}"
+                                            alt="JPM Fiscal Engine"
                                             style="width: 150px; height: auto; display: block;" 
-                                            onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=\\\'font-weight:900; font-size:24px; color:#0f172a;\\\'>NEOMA</div>'"
+                                            onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=\\\'font-weight:900; font-size:24px; color:#0f172a;\\\'>JPM</div>'"
                                         />
                                     </div>
     <div style="font-size: 0.9rem; font-weight: 900; letter-spacing: 0.5px; color: #0f172a; text-transform: uppercase;">
@@ -994,7 +994,7 @@
     <div style="font-size: 0.8rem; color: #475569; line-height: 1.4; margin-top: 4px;">
         9QGG+HG4, Rw. II, Gedongan, Kec. Baki<br>
         Kabupaten Sukoharjo, Jawa Tengah 57556<br>
-        +62 851-7531-0045 &bull; neomacreativehub@gmail.com
+        +62 851-7531-0045 &bull; fiscal@websitegan.id
     </div>
     </td>
     <td style="vertical-align: bottom; padding-bottom: 15px; text-align: right; width: 40%;">
@@ -1087,7 +1087,7 @@
                 </div>
             </td>
             <td style="width: 40%; text-align: right; vertical-align: bottom;">
-                <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">Neoma Creative Hub</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">JPM Fiscal Engine</div>
                 <div style="font-size: 0.8rem; color: #64748b;">Finance Dept.</div>
             </td>
         </tr>
@@ -1128,7 +1128,7 @@
                 const templates = [
                     `Gajian Alert! Saldo udah update. Imbalan Jasa ${data.period} sudah landing. Cek Slip Gaji PDF-nya di sini &
     lampirkan.`,
-                    `Warning: Duit masuk! Neoma Creative Hub sudah transfer Take Home Pay lu: ${data.amount}. Cek slip terlampir!`,
+                    `Warning: Duit masuk! JPM Fiscal Engine sudah transfer Take Home Pay lu: ${data.amount}. Cek slip terlampir!`,
                     `Transferan ${data.amount} sudah clear. Slip gaji resmi saya lampirkan ya. No drama, no waiting!`,
                     `Happy Payday! 🎉 Total Gaji Bersih sudah di rekening. File slip gaji ada di attachment ini.`,
                     `Imbalan Jasa Done! Transfer via ${data.bank || 'Bank'} sudah sukses. Cek detail di PDF slip gaji yang saya kirim.`,
@@ -1587,7 +1587,7 @@
                     const monthName = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('id-ID', { month: 'long' });
                     titleSuffix = ` ${monthName} ${y} `;
                 }
-                document.title = `Laporan Keuangan${titleSuffix} - Neoma Creative Hub`;
+                document.title = `Laporan Keuangan${titleSuffix} - JPM Fiscal Engine`;
                 window.print();
                 setTimeout(() => { document.title = originalTitle; }, 3000);
             },
@@ -1780,7 +1780,7 @@
 
                 container.innerHTML = `
             <div style="text-align:center; border-bottom:3px double #000; padding-bottom:10px; margin-bottom:20px;">
-                <h2 style="margin:0; text-transform:uppercase;">Neoma Creative Hub</h2>
+                <h2 style="margin:0; text-transform:uppercase;">JPM Fiscal Engine</h2>
                 <p style="margin:5px 0 0; font-size: 0.9rem;">Gedongan RW II, Kec. Baki, Sukoharjo</p>
                 <h3 style="margin:15px 0 5px; text-decoration: underline;">LAPORAN KEUANGAN</h3>
                 <p style="margin:0;">Periode: ${periodStr}</p>
@@ -1824,7 +1824,7 @@
                 document.body.appendChild(container);
 
                 const opt = {
-                    margin: 10, filename: `Laporan_Keuangan_${periodStr.replace(/ /g, '_')} _Neoma.pdf`, image: {
+                    margin: 10, filename: `Laporan_Keuangan_${periodStr.replace(/ /g, '_')} _JPM.pdf`, image: {
                         type: 'jpeg', quality: 0.98
                     }, html2canvas: { scale: 2 }, jsPDF: {
                         unit: 'mm', format: 'a4', orientation:

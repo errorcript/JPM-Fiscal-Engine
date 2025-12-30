@@ -8,7 +8,7 @@ const SimpleAuth = {
         return; // PIN NONAKTIF SEMENTARA
 
         // Cek apakah sudah login di sesi ini
-        if (sessionStorage.getItem('neoma_auth')) {
+        if (sessionStorage.getItem('jpm_auth')) {
             SimpleAuth.startIdleTimer();
             return;
         }
@@ -43,7 +43,7 @@ const SimpleAuth = {
     },
 
     lockApp: () => {
-        sessionStorage.removeItem('neoma_auth');
+        sessionStorage.removeItem('jpm_auth');
         SimpleAuth.renderLockScreen();
     },
 
@@ -101,7 +101,7 @@ const SimpleAuth = {
         overlay.innerHTML = `
             <div style="text-align:center; margin-bottom:2rem;">
                 <div style="font-size:3rem; margin-bottom:1rem;">🔒</div>
-                <h2 style="margin:0;">Neoma Secure</h2>
+                <h2 style="margin:0;">JPM Fiscal Engine</h2>
                 <p style="color:#94a3b8; margin:0.5rem 0 0;">Sesi Kedaluwarsa. Masukkan PIN.</p>
             </div>
             
@@ -162,7 +162,7 @@ const SimpleAuth = {
 
     checkPin: async () => {
         // Cek PIN
-        const savedPin = localStorage.getItem('neoma_pin');
+        const savedPin = localStorage.getItem('jpm_pin');
         let isValid = false;
 
         if (savedPin) {
@@ -181,7 +181,7 @@ const SimpleAuth = {
         }
 
         if (isValid) {
-            sessionStorage.setItem('neoma_auth', 'true');
+            sessionStorage.setItem('jpm_auth', 'true');
             const overlay = document.getElementById('auth-overlay');
             if (overlay) {
                 overlay.style.transition = 'opacity 0.3s';

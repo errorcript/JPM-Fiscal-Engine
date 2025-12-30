@@ -604,7 +604,7 @@ const app = {
         const d = app.currentTransaction || app.state.data;
         const total = app.formatCurrency(d.totalAmount || d.amount);
         const itemText = d.items.map(i => `- ${i.desc.substring(0, 20)}...`).join('%0A');
-        const text = `Halo *${d.customer.name}*,%0A%0ABerikut terlampir Invoice/Nota dari *Neoma Creative Hub* senilai *${total}*.%0A%0ADetail Layanan:%0A${itemText}%0A%0AInfo lebih lengkap lihat di PDF terlampir.%0A%0ATerima kasih,%0ANeoma Creative Hub`;
+        const text = `Halo *${d.customer.name}*,%0A%0ABerikut terlampir Invoice/Nota dari *JPM Fiscal Engine* senilai *${total}*.%0A%0ADetail Layanan:%0A${itemText}%0A%0AInfo lebih lengkap lihat di PDF terlampir.%0A%0ATerima kasih,%0AJPM Fiscal Engine`;
 
         let url = `https://wa.me/?text=${text}`;
         if (d.customer.phone && d.customer.phone.trim().length > 5) {
@@ -659,8 +659,8 @@ const app = {
         app.downloadPDF(() => {
             const d = app.currentTransaction || app.state.data;
             const total = app.formatCurrency(d.totalAmount || d.amount);
-            const subject = `Invoice from Neoma Creative Hub - ${d.customer.name} #${d.refNumber || ''}`;
-            const body = `Yth. ${d.customer.name},\n\nTerlampir tagihan dari Neoma Creative Hub sebesar ${total}.\n\nSalam,\nNeoma Creative Hub`;
+            const subject = `Invoice from JPM Fiscal Engine - ${d.customer.name} #${d.refNumber || ''}`;
+            const body = `Yth. ${d.customer.name},\n\nTerlampir tagihan dari JPM Fiscal Engine sebesar ${total}.\n\nSalam,\nJPM Fiscal Engine`;
             const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.location.href = url;
         });
