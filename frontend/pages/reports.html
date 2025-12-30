@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Keuangan - Neoma Creative Hub</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Html2Pdf Library (Legacy Support) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Core PDF Libraries (Required for New Rasterized Engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Load Base64 Logo Data (To fix Tainted Canvas & Design Issues) -->
+    <script src="../assets/logo-data.js"></script>
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .report-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+        }
+
+        .report-total {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+        }
+
+        /* Payroll Styles */
+        .payroll-box {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .payroll-box h3 {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        /* Modern Table Styles */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        td {
+            padding: 1rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Modern Inputs */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="month"],
+        select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            width: 100%;
+            font-family: inherit;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        /* Button Enhancements */
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .nav-bar {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-card);
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            font-weight: 600;
+        }
+
+        /* PRINT STYLES */
+        .print-header {
+            display: none;
+        }
+
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .nav-bar,
+            .btn,
+            .no-print,
+            input,
+            select,
+            .subtitle {
+                display: none !important;
+            }
+
+            .report-card {
+                border: none !important;
+                padding: 0 !important;
+                margin-bottom: 3rem !important;
+                break-inside: avoid;
+                background: transparent !important;
+            }
+
+            .report-header {
+                border-bottom: 2px solid black !important;
+                color: black !important;
+            }
+
+            .report-row {
+                border-bottom: 1px solid #ccc !important;
+            }
+
+            .report-total {
+                border-top: 2px solid black !important;
+                color: black !important;
+            }
+
+            h1,
+            h2,
+            h3,
+            h4,
+            span,
+            div {
+                color: black !important;
+            }
+
+            .status-badge {
+                border: 1px solid black;
+                color: black !important;
+                background: transparent !important;
+            }
+
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 2rem;
+                border-bottom: 3px double black;
+                padding-bottom: 1rem;
+            }
+
+            .print-header h2 {
+                margin: 0;
+                font-size: 1.5rem;
+                text-transform: uppercase;
+            }
+
+            .print-header p {
+                margin: 5px 0 0 0;
+                font-size: 0.9rem;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .dashboard-grid {
+                display: block;
+            }
+
+            #inputExpenseCard {
+                display: none !important;
+            }
+
+            #expenseListContainer {
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="nav-bar no-print">
+            <h2 style="margin:0; font-size:1.5rem; display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.8rem">📊</span> Laporan & Gaji
+            </h2>
+            <div class="nav-tabs">
+                <button id="btn-tax" class="nav-btn active" onclick="accApp.switchTab('tax', this)">🏛️ Pajak &
+                    Laporan</button>
+                <button id="btn-payroll" class="nav-btn" onclick="accApp.switchTab('payroll', this)">👥 Payroll &
+                    Slip</button>
+                <a href="dashboard.html" class="nav-btn"
+                    style="margin-left:5px; border-left:1px solid rgba(255,255,255,0.1); border-radius:0; padding-left:15px;">⬅
+                    Dashboard</a>
+            </div>
+        </div>
+
+        <!-- CONTAINER: TAX & REPORTS -->
+        <div id="tab-tax" class="container">
+            <div class="no-print">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <div>
+                        <h1 class="subtitle">Kepatuhan Pajak (PPh Final UMKM 0.5%)</h1>
+                        <p style="color:var(--text-secondary); font-size:0.9rem;">Otomatis dihitung dari Invoice yang
+                            dibuat.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" onclick="accApp.printReport()">🖨️ Cetak / PDF</button>
+                        <!-- <button class="btn btn-primary">Bayar Pajak</button> -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRINT HEADER -->
+            <div class="print-header">
+                <h2 style="margin-bottom:5px; text-transform:uppercase;">Neoma Creative Hub</h2>
+                <p style="margin:0; font-size:0.9rem;">Gedongan RW II, Kec. Baki, Sukoharjo • NIB: 1234567890</p>
+                <div style="border-bottom: 2px double black; margin: 15px 0;"></div>
+                <h3 style="margin:0;">LAPORAN KEUANGAN (SAK EMKM)</h3>
+                <p style="font-size:0.8rem; margin-top:5px;" id="printDate"></p>
+            </div>
+
+            <!-- Tax Section -->
+            <div class="report-card" style="margin-bottom: 2rem; border: 1px solid var(--accent-color);">
+                <div class="report-header">
+                    <h3>🏛️ Kepatuhan Pajak (PPh Final UMKM 0.5%)</h3>
+                    <span id="taxStatusBadge" class="status-badge" style="background:var(--bg-card)">Memuat...</span>
+                </div>
+                <div id="taxAlert"
+                    style="display:none; background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: bold; text-align: center; border: 2px solid #ef4444; animation: pulse 2s infinite;">
+                    ⚠️ BAYAR PAJAK SEBELUM TERLAMBAT! DENDA ITU NYESEK. PPh 0.5% Jatuh Tempo Segera!
+                </div>
+                <div style="display: flex; gap: 2rem; align-items: flex-end; flex-wrap: wrap;">
+                    <div>
+                        <label>Jenis Laporan</label>
+                        <select id="reportType" onchange="taxApp.render(); accApp.renderReports();">
+                            <option value="MONTH">Bulanan</option>
+                            <option value="YEAR">Tahunan (YTD)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Periode</label>
+                        <input type="month" id="taxMonth" onchange="taxApp.render(); accApp.renderReports()">
+                    </div>
+                    <div>
+                        <label>Omset Bruto</label>
+                        <div id="taxGross" style="font-size: 1.2rem; font-weight: bold;">Rp 0</div>
+                    </div>
+                    <div>
+                        <label>PPh Terutang (0.5%)</label>
+                        <div id="taxPayable" style="font-size: 1.2rem; font-weight: bold; color: var(--gold)">Rp 0</div>
+                    </div>
+                    <div style="flex-grow: 1; text-align: right;">
+                        <div id="taxAction">
+                            <small style="display:block; margin-bottom: 5px; color: var(--text-secondary)">Jatuh Tempo:
+                                <span id="taxDueDate">-</span></small>
+                            <button class="btn btn-primary" onclick="taxApp.pay()">💸 Bayar Pajak Sekarang</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PPh 23 Section -->
+            <div class="report-card" style="margin-bottom: 2rem; border: 1px solid var(--accent-color);">
+                <div class="report-header">
+                    <h3>💼 Kewajiban PPh 23 (Jasa Eksternal)</h3>
+                    <span class="status-badge" style="background:var(--bg-card)">Tarif 2%</span>
+                </div>
+                <div id="pph23Alert"
+                    style="display:none; background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: bold;">
+                    ⚠️ Ada PPh 23 yang belum disetor!
+                </div>
+
+                <!-- List of Unpaid Tax -->
+                <div id="pph23List" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;">
+                    <div style="text-align:center; color:var(--text-secondary); padding:1rem;">Memuat data...</div>
+                </div>
+
+                <div style="text-align: right;">
+                    <button class="btn btn-secondary" onclick="accApp.downloadTax23Recap()">📄 Download Rekap Bukti
+                        Potong</button>
+                </div>
+            </div>
+
+            <!-- Input Pengeluaran -->
+            <div id="inputExpenseCard" class="report-card" style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📝 Input Pengeluaran Operasional</h3>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 130px;">
+                        <input type="date" id="expDate" title="Tanggal Transaksi">
+                    </div>
+                    <div style="flex: 2; min-width: 200px;">
+                        <select id="expAccount" title="Pilih Akun Biaya"></select>
+                    </div>
+                    <div style="flex: 3; min-width: 200px;">
+                        <input type="text" id="expDesc" placeholder="Keterangan / Deskripsi (Opsional)">
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <input type="number" id="expAmount" placeholder="Nominal (Rp)">
+                    </div>
+                    <button class="btn btn-primary" onclick="accApp.saveExpense()">Simpan</button>
+                </div>
+
+
+                <!-- PAYROLL SELECTOR (Only for 6-1000) -->
+                <div id="payrollFields"
+                    style="display:none; margin-top:1rem; padding:1rem; background:rgba(59, 130, 246, 0.1); border:1px dashed #3b82f6; border-radius:6px;">
+                    <div style="font-size:0.8rem; color:#60a5fa; margin-bottom:0.5rem;">👤 Pilih Karyawan Penerima Gaji:
+                    </div>
+                    <select id="payEmployee"
+                        style="width:100%; padding:0.5rem; background:#1e293b; border:1px solid #3b82f6; color:white; border-radius:4px;">
+                        <option value="">-- Pilih Karyawan --</option>
+                    </select>
+                    <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.5rem;">*Deskripsi akan
+                        otomatis diisi: "Gaji [Nama] - [Tanggal]"</div>
+                </div>
+
+                <!-- PPh 23 Fields (Hidden by default) -->
+                <div id="pph23Fields"
+                    style="display:none; margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px dashed var(--text-secondary);">
+                    <h4 style="margin: 0 0 1rem 0; color: var(--accent-color);">Potongan PPh 23 (Wajib untuk PT/CV)</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="display:block; font-size:0.8rem; margin-bottom:4px;">Nama Mitra
+                                (PT/CV)</label>
+                            <input type="text" id="p23Name" placeholder="Contoh: PT. Vendor Jaya"
+                                style="width:100%; padding:0.5rem;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.8rem; margin-bottom:4px;">NPWP Mitra</label>
+                            <input type="text" id="p23Npwp" placeholder="00.000.000.0-000.000"
+                                style="width:100%; padding:0.5rem;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.8rem; margin-bottom:4px;">Jenis Jasa - Tarif
+                                2%</label>
+                            <select id="p23Type" style="width:100%; padding:0.5rem;">
+                                <option value="Jasa Lainnya">Jasa Lainnya / Teknik</option>
+                                <option value="Jasa Manajemen">Jasa Manajemen</option>
+                                <option value="Jasa Desain">Jasa Desain</option>
+                                <option value="Sewa">Sewa (Non-Tanah/Bangunan)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: right; font-size: 0.9rem;">
+                        <div>Gross Amount: <strong id="p23GrossDisp">Rp 0</strong></div>
+                        <div style="color: var(--danger)">Potongan PPh 23 (2%): <strong id="p23TaxDisp">Rp 0</strong>
+                        </div>
+                        <div style="color: var(--success); font-size: 1.1rem; margin-top:5px;">Net Payment (Yang
+                            Dibayar):
+                            <strong id="p23NetDisp">Rp 0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rincian Pengeluaran Table -->
+            <div class="report-card" style="margin-bottom: 2rem;">
+                <div class="report-header">
+                    <h3>📋 Rincian Pengeluaran</h3>
+                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;"
+                        onclick="accApp.toggleExpenseList()">Tampilkan / Sembunyikan</button>
+                </div>
+                <div id="expenseListContainer" style="display:none; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                                <th style="padding: 0.5rem;">Tanggal</th>
+                                <th style="padding: 0.5rem;">Akun</th>
+                                <th style="padding: 0.5rem;">Keterangan</th>
+                                <th style="padding: 0.5rem; text-align: right;">Nominal</th>
+                                <th style="padding: 0.5rem; text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Laporan Laba Rugi -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3>Laporan Laba Rugi</h3>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;"
+                            onclick="accApp.exportIncome()">Export CSV</button>
+                    </div>
+                    <div id="incomeContent"></div>
+                    <div class="report-total">
+                        <span>Laba Bersih</span>
+                        <span id="netIncomeDisplay" style="color: var(--success)">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Neraca -->
+                <div class="report-card">
+                    <div class="report-header">
+                        <h3>Laporan Posisi Keuangan (Neraca)</h3>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;"
+                            onclick="accApp.exportBalanceSheet()">Export CSV</button>
+                    </div>
+                    <h4 style="margin: 1rem 0; color: var(--accent-color)">Aset</h4>
+                    <div id="assetsContent"></div>
+                    <div class="report-total" style="color: var(--text-primary)">
+                        <span>Total Aset</span>
+                        <span id="totalAssets">0</span>
+                    </div>
+                    <h4 style="margin: 1.5rem 0 1rem 0; color: var(--gold)">Kewajiban & Ekuitas</h4>
+                    <div id="liabEquityContent"></div>
+                    <div class="report-total" style="color: var(--text-primary)">
+                        <span>Total Kewajiban & Ekuitas</span>
+                        <span id="totalLiabEquity">0</span>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--success);"
+                        id="balanceCheck">
+                        ✅ Balance Check: OK
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; text-align: center;">
+                <button class="btn btn-secondary" onclick="DB.clearData()"
+                    style="color: var(--danger); border-color: var(--danger);">⚠ Reset Semua Data</button>
+            </div>
+
+        </div> <!-- END TAX TAB -->
+
+        <!-- CONTAINER: PAYROLL & SLIP GAJI -->
+        <div id="tab-payroll" class="container" style="display:none;">
+            <div class="no-print">
+                <h1 class="subtitle">Payroll & Slip Gaji</h1>
+                <p style="color:var(--text-secondary); margin-bottom:2rem;">Kelola data karyawan dan buat slip gaji
+                    otomatis.</p>
+
+                <!-- 1. Employee Management -->
+                <div class="payroll-box">
+                    <h3
+                        style="margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">
+                        👥 Data Karyawan</h3>
+                    <div style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:1rem; align-items:end;">
+                        <div>
+                            <label style="font-size:0.8rem;">Nama Lengkap</label>
+                            <input type="text" id="empName" placeholder="Nama Karyawan"
+                                style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.2); border:1px solid #334155; color:white;">
+                        </div>
+                        <div>
+                            <label
+                                style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-secondary);">Status
+                                Pajak</label>
+                            <select id="empStatus">
+                                <option value="TK/0">TK/0 (Lajang)</option>
+                                <option value="K/0">K/0 (Menikah, 0 Anak)</option>
+                                <option value="K/1">K/1 (Menikah, 1 Anak)</option>
+                                <option value="K/2">K/2 (Menikah, 2 Anak)</option>
+                                <option value="K/3">K/3 (Menikah, 3 Anak)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;">NPWP</label>
+                            <input type="text" id="empNpwp" placeholder="00.000..."
+                                style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.2); border:1px solid #334155; color:white;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;">No. WhatsApp</label>
+                            <input type="text" id="empPhone" placeholder="628123456789"
+                                style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.2); border:1px solid #334155; color:white;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;">Jabatan</label>
+                            <input type="text" id="empRole" placeholder="Contoh: Staff Admin"
+                                style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.2); border:1px solid #334155; color:white;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;">No. Rekening</label>
+                            <input type="text" id="empBank" placeholder="BCA 1234567890"
+                                style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.2); border:1px solid #334155; color:white;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;">Tanggal Masuk</label>
+                            <input type="date" id="empJoinDate"
+                                style="width:100%; padding:0.5rem; background:rgba(0,0,0,0.2); border:1px solid #334155; color:white;">
+                        </div>
+                        <input type="hidden" id="empId">
+                        <button class="btn btn-primary" onclick="accApp.saveEmployee()"
+                            style="height:fit-content; margin-bottom:2px;">+ Simpan</button>
+                    </div>
+                    <div id="employeeList" style="margin-top:1rem; max-height:150px; overflow-y:auto;">
+                        <!-- Emp List -->
+                    </div>
+                </div>
+
+                <!-- 2. Salary History (From Expense 6-1000) -->
+                <div class="payroll-box">
+                    <h3
+                        style="margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">
+                        💸 Riwayat Penggajian (Expense)</h3>
+                    <div id="salaryList">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- 3. Rekapitulasi Tahunan -->
+                <div class="payroll-box">
+                    <h3
+                        style="margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem;">
+                        📊 Rekapitulasi PPh 21 Tahunan (Estimasi)</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:2rem; align-items:center;">
+                        <div>
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">Total Gaji Bruto Tahun Ini</div>
+                            <div style="font-size:1.5rem; font-weight:bold;" id="ytdGross">Rp 0</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.8rem; color:var(--text-secondary);">Est. Total PPh 21 (Simulasi 5%)
+                            </div>
+                            <div style="font-size:1.5rem; font-weight:bold; color:#ef4444;" id="ytdTax">Rp 0</div>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" onclick="accApp.downloadPayrollRecap()">📄 Export CSV
+                                untuk SPT</button>
+                        </div>
+                    </div>
+                    <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:1rem;">*Angka PPh 21 adalah
+                        simulasi tarif efektif 5% untuk pegawai tetap dengan status TK/0.</p>
+                </div>
+
+                <!-- 4. Slip Gaji Preview Modal (Overlay) -->
+                <div id="slipModal" class="modal"
+                    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; overflow-y:auto;">
+                    <div class="modal-content"
+                        style="background:#1e293b; padding:2rem; border-radius:12px; max-width:600px; width:90%; position:relative;">
+                        <button onclick="document.getElementById('slipModal').style.display='none'"
+                            style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+                        <h3 style="margin-bottom:1rem;">📄 Preview Slip Gaji</h3>
+
+                        <div id="slipContent" class="slip-preview" style="display:block; margin-bottom:1rem;">
+                            <!-- Slip Content -->
+                        </div>
+
+                        <div id="slipModalFooter" style="margin-top: 1rem; text-align: right;">
+                            <!-- Buttons injected dynamically -->
+                            <button class="btn btn-secondary"
+                                onclick="document.getElementById('slipModal').style.display='none'">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Hidden Print Mount for Slip -->
+    <div id="slip-print-mount"></div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/auth.js"></script>
+    <!-- DATABASE MODULES (Split) -->
+    <script src="../../backend/models/db-config.js?v=fixed"></script>
+    <script src="../../backend/models/db-core.js?v=fixed"></script>
+    <script src="../../backend/models/db-finance.js?v=fixed"></script>
+    <script src="../../backend/models/db-contacts.js?v=fixed"></script>
+    <script src="../../backend/controllers/accounting.js?v=final-rev-4"></script>
+    <script>
+        const accApp = {
+            currentSlipData: null,
+
+            init: async () => {
+                // 1. Restore Tab State Immediately (Optimistic UI)
+                const savedTab = localStorage.getItem('activeReportTab') || 'tax';
+                accApp.switchTab(savedTab);
+
+                // Print Date
+                setTimeout(() => {
+                    const pDate = document.getElementById('printDate');
+                    if (pDate) {
+                        const now = new Date();
+                        pDate.textContent = "Dicetak per: " + now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    }
+                }, 500);
+
+                // UI First
+                const dateInput = document.getElementById('expDate');
+                if (dateInput) dateInput.valueAsDate = new Date();
+
+                const joinInput = document.getElementById('empJoinDate');
+                if (joinInput) joinInput.valueAsDate = new Date();
+
+                const sel = document.getElementById('expAccount');
+                if (typeof COA !== 'undefined' && sel) {
+                    sel.innerHTML = '<option value="">-- Pilih Akun Biaya --</option>';
+                    COA.EXPENSES.forEach(acc => {
+                        const opt = document.createElement('option');
+                        opt.value = acc.code;
+                        opt.textContent = `${acc.code} - ${acc.name}`;
+                        sel.appendChild(opt);
+                    });
+                }
+
+                // Add listener for Account Select
+                if (sel) {
+                    sel.addEventListener('change', () => {
+                        const val = sel.value;
+                        if (val === '6-4000' || val === '6-3000') {
+                            document.getElementById('pph23Fields').style.display = 'block';
+                            document.getElementById('payrollFields').style.display = 'none';
+                            accApp.calcPPh23();
+                        }
+                        else if (val === '6-1000') {
+                            document.getElementById('pph23Fields').style.display = 'none';
+                            document.getElementById('payrollFields').style.display = 'block';
+                            accApp.populateEmpSelect();
+                        } else {
+                            document.getElementById('pph23Fields').style.display = 'none';
+                            document.getElementById('payrollFields').style.display = 'none';
+                        }
+                    });
+                }
+
+                // Add listener for Amount change to recalc tax
+                document.getElementById('expAmount').addEventListener('input', accApp.calcPPh23);
+
+                try {
+                    await DB.init();
+                    accApp.renderReports();
+                    accApp.renderEmployees();
+
+                    // Re-render payroll content if that's where we are
+                    if (savedTab === 'payroll') {
+                        accApp.renderSalaryList();
+                        accApp.renderPayrollStats();
+                    }
+                } catch (e) {
+                    console.error("DB Init Failed:", e);
+                }
+            },
+
+            switchTab: (tab, el) => {
+                // Save state
+                localStorage.setItem('activeReportTab', tab);
+
+                document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+
+                // Robust Active Class Set
+                if (el) {
+                    el.classList.add('active');
+                } else {
+                    const btnId = (tab === 'tax') ? 'btn-tax' : 'btn-payroll';
+                    const btn = document.getElementById(btnId);
+                    if (btn) btn.classList.add('active');
+                }
+
+                document.getElementById('tab-tax').style.display = (tab === 'tax') ? 'block' : 'none';
+                document.getElementById('tab-payroll').style.display = (tab === 'payroll') ? 'block' : 'none';
+
+                if (tab === 'payroll') {
+                    // Safe call - data might be empty if DB not ready, but structure will show
+                    try {
+                        accApp.renderSalaryList();
+                        accApp.renderEmployees();
+                        accApp.renderPayrollStats();
+                    } catch (e) { console.log(e); }
+                }
+            },
+
+            // --- PAYROLL FUNCTIONS ---
+
+            populateEmpSelect: () => {
+                const sel = document.getElementById('payEmployee');
+                sel.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+                DB.getEmployees().forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.id; // Store ID
+                    opt.textContent = e.name;
+                    sel.appendChild(opt);
+                });
+            },
+
+            saveEmployee: async () => {
+                try {
+                    const id = document.getElementById('empId').value;
+                    const name = document.getElementById('empName').value;
+                    const status = document.getElementById('empStatus').value;
+                    const npwp = document.getElementById('empNpwp').value;
+                    const phone = document.getElementById('empPhone').value;
+                    const role = document.getElementById('empRole').value;
+                    const bank = document.getElementById('empBank').value;
+                    const joinDate = document.getElementById('empJoinDate').value;
+
+                    if (!name) return alert("Nama Karyawan wajib diisi");
+
+                    const newEmp = {
+                        id: id || DB.generateId(),
+                        name: name,
+                        status: status,
+                        npwp: npwp,
+                        phone: phone,
+                        role: role,
+                        bank: bank,
+                        joinDate: joinDate
+                    };
+
+                    await DB.saveEmployee(newEmp);
+
+                    // Clear form
+                    document.getElementById('empId').value = '';
+                    document.getElementById('empName').value = '';
+                    document.getElementById('empNpwp').value = '';
+                    document.getElementById('empPhone').value = '';
+                    document.getElementById('empRole').value = '';
+                    document.getElementById('empBank').value = '';
+                    document.getElementById('empJoinDate').value = '';
+
+                    accApp.renderEmployees();
+                    accApp.populateEmpSelect();
+                    alert("Karyawan berhasil disimpan!");
+
+                } catch (e) {
+                    console.error("Save Employee Error:", e);
+                    alert("Gagal Simpan: " + e.message);
+                }
+            },
+
+            editEmployee: (id) => {
+                const emp = DB.getEmployees().find(e => e.id === id);
+                if (!emp) return;
+
+                document.getElementById('empId').value = emp.id;
+                document.getElementById('empName').value = emp.name;
+                document.getElementById('empStatus').value = emp.status;
+                document.getElementById('empNpwp').value = emp.npwp || '';
+                document.getElementById('empPhone').value = emp.phone || '';
+                document.getElementById('empRole').value = emp.role || '';
+                document.getElementById('empBank').value = emp.bank || '';
+                document.getElementById('empJoinDate').value = emp.joinDate || '';
+
+                // Scroll to top of form
+                document.querySelector('.payroll-box').scrollIntoView({ behavior: 'smooth' });
+            },
+
+            renderEmployees: () => {
+                const list = DB.getEmployees();
+                const container = document.getElementById('employeeList');
+                if (!container) return;
+
+
+                let html = `<table style="width:100%; font-size:0.85rem; border-collapse:collapse;">`;
+                list.forEach(e => {
+                    html += `
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:6px;">${e.name}</td>
+                            <td style="padding:6px;">${e.status}</td>
+                            <td style="padding:6px;">${e.npwp || '-'}</td>
+                             <td style="padding:6px;">${e.phone ? '📞 ' + e.phone : '-'}</td>
+                            <td style="padding:6px; text-align:right;">
+                    <button onclick="accApp.editEmployee('${e.id}')" style="background:none; border:none; margin-right:5px; cursor:pointer;" title="Edit">✏️</button>
+                    <button onclick="DB.deleteEmployee('${e.id}'); setTimeout(accApp.renderEmployees, 100);" style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer;" title="Hapus">🗑️</button>
+                </td>            </td>
+                        </tr>
+                        `;
+                });
+                html += `</table>`;
+                container.innerHTML = html;
+            },
+
+            deleteEmployee: async (id) => {
+                // For Lite version, just remove from Cache and update
+                DB.getEmployees().splice(DB.getEmployees().findIndex(e => e.id === id), 1);
+                DB.saveToLocalStorage();
+                accApp.renderEmployees();
+            },
+
+            renderSalaryList: () => {
+                const container = document.getElementById('salaryList');
+                // Get all journals for Biaya Gaji (6-1000)
+                const journals = DB.getAllJournals().filter(j =>
+                    j.lines.some(l => l.account === '6-1000' && l.debit > 0)
+                ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                if (journals.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; color:var(--text-secondary); padding:1rem;">Belum ada pengeluaran Biaya Gaji (6-1000) dicatat.</div>`;
+                    return;
+                }
+
+                let html = `<table>
+                    <thead><tr><th>Tanggal</th><th>Deskripsi</th><th>Nominal</th><th>Aksi</th></tr></thead><tbody>`;
+
+                const fmt = AccountingService.formatIDR;
+
+                journals.forEach(j => {
+                    const line = j.lines.find(l => l.account === '6-1000');
+                    const amt = line.debit;
+                    // Escape Desc quotes
+                    const safeDesc = (j.desc || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                    html += `
+                        <tr>
+                            <td>${j.date}</td>
+                            <td>${j.desc}</td>
+                            <td style="font-family:monospace; font-weight:bold; color:var(--accent-color);">${fmt(amt)}</td>
+                            <td>
+                                <button class="btn btn-secondary" style="font-size:0.75rem; padding:4px 10px;" onclick="accApp.prepSlip('${j.id}', ${amt}, '${j.date}', '${safeDesc}')">📄 Buat Slip</button>
+                                <button class="btn btn-danger" style="font-size:0.75rem; padding:4px 10px; margin-left:5px;" onclick="accApp.deleteExpense('${j.id}')">🗑️ Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            },
+
+            prepSlip: (journalId, amount, date, desc) => {
+                const employees = DB.getEmployees();
+                if (employees.length === 0) return alert("Belum ada data karyawan! Tambahkan dulu di atas.");
+
+                // 1. Auto-Detect Employee from Description (e.g., "Gaji Henri")
+                let emp = employees.find(e => desc.toLowerCase().includes(e.name.toLowerCase()));
+
+                // 2. Fallback: Use the first employee if not found (No Prompt)
+                if (!emp) emp = employees[0];
+
+                // Calculate PPh 21 Simulation (Simplified Adjusted Progressive)
+                // Using 5% rate on (Gross - PTKP)
+                // PTKP 2024: TK/0 = 54jt, K/0 = 58.5jt, K/1 = 63jt etc.
+                // Monthly PTKP: TK/0 = 4.5jt.
+
+                let ptkpYearly = 54000000;
+                if (emp.status === 'K/0') ptkpYearly = 58500000;
+                if (emp.status === 'K/1') ptkpYearly = 63000000;
+                if (emp.status === 'K/2') ptkpYearly = 67500000;
+                if (emp.status === 'K/3') ptkpYearly = 72000000; // Added K/3
+
+                const ptkpMonthly = ptkpYearly / 12;
+
+                // Biaya Jabatan 5% max 500k
+                let biayaJabatan = amount * 0.05;
+                if (biayaJabatan > 500000) biayaJabatan = 500000;
+
+                const netBruto = amount - biayaJabatan;
+                const pkp = (netBruto - ptkpMonthly) > 0 ? (netBruto - ptkpMonthly) : 0;
+
+                // Tarif 5% (Simplified Layer 1)
+                const tax = Math.floor(pkp * 0.05);
+                const takeHome = amount - tax; // Note: In this generic expense, usually we pay FULL amount, so Tax is borne by employee or company? 
+                // Context "Biaya Gaji" usually means Gross Expense. So Net Pay is Gross - Tax.
+
+                // Render Slip
+                const fmt = AccountingService.formatIDR;
+                const [y, m, d] = date.split('-');
+                const period = new Date(y, m - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+                // Modern Slip Gaji Design (Table-Based Layout for 100% PDF Consistency)
+                // Menggunakan Table alih-alih Flexbox menjamin html2canvas merender posisi Kiri-Kanan dengan akurat.
+                const html = `
+                    <div id="slipPaper" style="background: white; color: black; font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; width: 100%; box-sizing: border-box;">
+                        
+                        <!-- Header Table -->
+                        <table style="width: 100%; border-bottom: 3px solid #0f172a; margin-bottom: 25px; border-collapse: collapse;">
+                            <tr>
+                                <td style="vertical-align: bottom; padding-bottom: 15px; width: 60%;">
+                                    <!-- Logo Container -->
+                                    <div style="margin-bottom: 5px;">
+                                        <!-- REAL LOGO (Base64 Injected Directly) -->
+                                        <img 
+                                            src="${window.NEOMA_LOGO_BASE64 || '../assets/neoma-logo.png'}"
+                                            alt="NEOMA CREATIVE HUB"
+                                            style="width: 150px; height: auto; display: block;" 
+                                            onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=\\\'font-weight:900; font-size:24px; color:#0f172a;\\\'>NEOMA</div>'"
+                                        />
+                                    </div>
+    <div style="font-size: 0.9rem; font-weight: 900; letter-spacing: 0.5px; color: #0f172a; text-transform: uppercase;">
+        Integrated Business Solution</div>
+    <div style="font-size: 0.8rem; color: #475569; line-height: 1.4; margin-top: 4px;">
+        9QGG+HG4, Rw. II, Gedongan, Kec. Baki<br>
+        Kabupaten Sukoharjo, Jawa Tengah 57556<br>
+        +62 851-7531-0045 &bull; neomacreativehub@gmail.com
+    </div>
+    </td>
+    <td style="vertical-align: bottom; padding-bottom: 15px; text-align: right; width: 40%;">
+        <div style="font-size: 3rem; font-weight: 900; color: #e2e8f0; line-height: 0.8; text-transform: uppercase;">
+            SLIP<br>GAJI</div>
+        <div
+            style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-top: 10px; border-top: 2px solid #cbd5e1; display: inline-block; padding-top: 5px;">
+            ${period}</div>
+    </td>
+    </tr>
+    </table>
+
+    <!-- Employee Info Table -->
+    <table style="width: 100%; margin-bottom: 30px; border-collapse: collapse;">
+        <tr>
+            <td style="vertical-align: top; width: 55%; padding-right: 20px;">
+                <div
+                    style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">
+                    Penerima</div>
+                <div
+                    style="font-size: 1.4rem; font-weight: 700; color: #0f172a; border-left: 4px solid #3b82f6; padding-left: 12px; margin-bottom: 5px;">
+                    ${emp.name}</div>
+                <div style="font-size: 0.95rem; color: #334155; padding-left: 16px; font-weight: 500;">${emp.role ||
+                    'Tenaga Kerja Profesional'}</div>
+                <div style="font-size: 0.85rem; color: #64748b; padding-left: 16px;">Status Pajak: ${emp.status}</div>
+            </td>
+            <td style="vertical-align: top; text-align: right; width: 45%;">
+                <div
+                    style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">
+                    Detail Pegawai</div>
+                <div style="font-size: 0.9rem; color: #334155; margin-bottom: 2px;"><strong>NPWP:</strong> ${emp.npwp ||
+                    '-'}</div>
+                <div style="font-size: 0.9rem; color: #334155; margin-bottom: 2px;"><strong>ID:</strong>
+                    ${emp.id.substring(0, 6).toUpperCase()}</div>
+                <div style="font-size: 0.9rem; color: #334155;"><strong>Masuk:</strong> ${emp.joinDate || '-'}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Content Table -->
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+        <thead>
+            <tr style="background-color: #f8fafc; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
+                <th
+                    style="text-align: left; padding: 12px 15px; font-size: 0.85rem; color: #475569; text-transform: uppercase; font-weight: 700;">
+                    Keterangan</th>
+                <th
+                    style="text-align: right; padding: 12px 15px; font-size: 0.85rem; color: #475569; text-transform: uppercase; font-weight: 700;">
+                    Nominal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding: 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-size: 1rem;">Gaji Pokok
+                    & Tunjangan</td>
+                <td
+                    style="padding: 15px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #1e293b; font-weight: 600; font-size: 1rem;">
+                    ${fmt(amount)}</td>
+            </tr>
+            <tr>
+                <td style="padding: 15px; border-bottom: 1px solid #f1f5f9; color: #ef4444; font-size: 1rem;">Potongan
+                    PPh 21</td>
+                <td
+                    style="padding: 15px; border-bottom: 1px solid #f1f5f9; text-align: right; color: #ef4444; font-size: 1rem;">
+                    (${fmt(tax)})</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Net Total Box -->
+    <div
+        style="background: #f1f5f9; padding: 25px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #cbd5e1; margin-bottom: 40px;">
+        <div>
+            <div
+                style="font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 4px;">
+                Total Diterima (Net)</div>
+            <div style="font-size: 0.9rem; color: #475569;">Via Transfer: <strong>${emp.bank || '-'}</strong></div>
+        </div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: #0f172a;">${fmt(takeHome)}</div>
+    </div>
+
+    <!-- Footer Table -->
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 60%; vertical-align: bottom;">
+                <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 5px; font-weight: 600;">Catatan:</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.5; padding-right: 20px;">
+                    Slip gaji ini adalah dokumen rahasia. Harap simpan dengan baik.<br>
+                    Dokumen ini valid secara digital tanpa tanda tangan basah.
+                </div>
+            </td>
+            <td style="width: 40%; text-align: right; vertical-align: bottom;">
+                <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">Neoma Creative Hub</div>
+                <div style="font-size: 0.8rem; color: #64748b;">Finance Dept.</div>
+            </td>
+        </tr>
+    </table>
+    </div>
+    `;
+
+                document.getElementById('slipContent').innerHTML = html;
+
+                // Re-render footer buttons
+                const modalParams = JSON.stringify({
+                    name: emp.name, phone: emp.phone, amount: fmt(takeHome), period: period, bank:
+                        emp.bank
+                }).replace(/"/g, '&quot;');
+
+                let waButton = '';
+                if (emp.phone) {
+                    waButton = `<button class="btn btn-primary"
+        style="background:#25D366; border-color:#25D366; color:white; margin-right:8px; font-weight:bold;"
+        onclick="accApp.sendSlipWA(${modalParams})">📱 Kirim WA</button>`;
+                }
+
+                // Inject buttons into modal footer
+                const footer = document.getElementById('slipModalFooter');
+                if (footer) {
+                    footer.innerHTML = `
+    ${waButton}
+    <button class="btn btn-primary" onclick="accApp.downloadSlipPDF()">⬇️ Download PDF</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('slipModal').style.display='none'">Tutup</button>
+    `;
+                }
+
+                document.getElementById('slipModal').style.display = 'flex';
+                accApp.currentSlipData = { name: emp.name, period: period };
+            },
+
+            sendSlipWA: async (data) => {
+                const templates = [
+                    `Gajian Alert! Saldo udah update. Imbalan Jasa ${data.period} sudah landing. Cek Slip Gaji PDF-nya di sini &
+    lampirkan.`,
+                    `Warning: Duit masuk! Neoma Creative Hub sudah transfer Take Home Pay lu: ${data.amount}. Cek slip terlampir!`,
+                    `Transferan ${data.amount} sudah clear. Slip gaji resmi saya lampirkan ya. No drama, no waiting!`,
+                    `Happy Payday! 🎉 Total Gaji Bersih sudah di rekening. File slip gaji ada di attachment ini.`,
+                    `Imbalan Jasa Done! Transfer via ${data.bank || 'Bank'} sudah sukses. Cek detail di PDF slip gaji yang saya kirim.`,
+                    `Halo ${data.name}, Imbalan Jasa ${data.period} sudah diproses. Slip gaji resmi terlampir. Simpan buat arsip pribadi
+    ya.`,
+                    `Transfer ${data.amount} Sudah Masuk. Cek slip gaji lu. Potongan PPh 21 sudah dikalkulasi di dalamnya.`,
+                    `Gaji Confirmed. Cek detail PPh 21 lu di slip PDF ini. Netto sudah di rekening. Thanks for the hard work!`,
+                    `Udah Masuk! Imbalan jasa udah klop ke rekening. Slip gaji PDF ini valid. Download & Simpan.`,
+                    `Transfer Gaji Finalized. Slip gaji download & attach manual ya. Make sure lu happy dengan saldo lu hari ini!`,
+                    `Gaji Ready. Imbalan Jasa & Tunjangan sudah dibayarkan. Ini slip gaji digital lu (file terlampir).`,
+                    `System Status: Green! Gaji lu udah masuk. Lampiran PDF Slip Gaji ada di chat ini.`
+                ];
+
+                let msg = templates[Math.floor(Math.random() * templates.length)];
+                let cleanPhone = data.phone.toString().replace(/\D/g, '');
+                if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
+                if (cleanPhone.length < 5) { alert("Nomor WA tidak valid!"); return; }
+
+                const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                // --- INTEGRATED FLOW: 1. DOWNLOAD -> 2. REDIRECT ---
+                const btn = document.querySelector('button[onclick*="sendSlipWA"]');
+                const originalText = btn ? btn.textContent : "📱 Kirim WA";
+
+                if (btn) {
+                    btn.textContent = "⏳ Memproses PDF...";
+                    btn.disabled = true;
+                }
+
+                try {
+                    // Step 1: Force Secure Download (Wait for success)
+                    const downloadSuccess = await accApp.downloadSlipPDF();
+
+                    if (!downloadSuccess) {
+                        throw new Error("Gagal membuat PDF.");
+                    }
+
+                    // Step 2: Redirect to WA
+                    if (btn) btn.textContent = "✅ Mengalihkan...";
+
+                    setTimeout(() => {
+                        window.open(url, '_blank');
+                        if (btn) {
+                            btn.textContent = originalText;
+                            btn.disabled = false;
+                        }
+                    }, 1500);
+
+                } catch (e) {
+                    console.error("WA Flow Error:", e);
+                    alert("Terjadi kesalahan saat memproses file. Coba unduh manual.");
+                    if (btn) {
+                        btn.textContent = originalText;
+                        btn.disabled = false;
+                    }
+                }
+            },
+
+            downloadSlipPDF: async () => {
+                const element = document.getElementById('slipPaper');
+                if (!element) { alert("Data slip tidak ditemukan. Harap refresh."); return false; }
+
+                const btn = document.querySelector('button[onclick*="downloadSlipPDF"]');
+                const originalText = btn ? btn.textContent : "⬇️ Download PDF";
+                if (btn) btn.textContent = "⏳ Rendering PDF...";
+
+                // --- STRATEGY: RASTERIZE VISUAL (Simple & Safe) ---
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: #ffffff; z-index: 999999; display: flex;
+        justify-content: center; align-items: flex-start;
+        padding: 20px; overflow: hidden;
+        `;
+
+                const clone = element.cloneNode(true);
+                clone.style.width = '794px';
+                clone.style.minHeight = '1123px';
+                clone.style.margin = '0 auto';
+                clone.style.boxShadow = 'none';
+                clone.style.transform = 'scale(1)';
+                clone.style.color = '#000';
+
+                overlay.appendChild(clone);
+                document.body.appendChild(overlay);
+
+                try {
+                    // Buffer waktu render
+                    await new Promise(r => setTimeout(r, 800));
+
+                    // --- RASTERIZE ---
+                    if (typeof html2canvas === 'undefined') throw new Error("Library html2canvas missing.");
+
+                    const canvas = await html2canvas(clone, {
+                        scale: 1.5,
+                        useCORS: true,
+                        allowTaint: false,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        windowWidth: 1000
+                    });
+
+                    // --- GENERATE PDF ---
+                    const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+                    if (!jsPDF) throw new Error("Library jsPDF missing.");
+
+                    const doc = new jsPDF({
+                        orientation: 'portrait', unit: 'mm', format: 'a4'
+                    });
+
+                    try {
+                        const imgData = canvas.toDataURL('image/png');
+                        const docWidth = doc.internal.pageSize.getWidth();
+                        const imgProps = doc.getImageProperties(imgData);
+                        const pdfHeight = (imgProps.height * docWidth) / imgProps.width;
+
+                        doc.addImage(imgData, 'PNG', 0, 0, docWidth, pdfHeight);
+
+                        // Filename
+                        const sName = (accApp.currentSlipData && accApp.currentSlipData.name) || 'Karyawan';
+                        const sPeriod = (accApp.currentSlipData && accApp.currentSlipData.period) || 'Periode';
+                        const filename = `Slip_Gaji_${sName.replace(/[^a-zA-Z0-9]/g, '_')}_${sPeriod.replace(/[^a-zA-Z0-9]/g,
+                            '_')}.pdf`;
+
+                        doc.save(filename);
+
+                        // Success Feedback
+                        if (btn) btn.textContent = "✅ Berhasil";
+                        setTimeout(() => { if (btn) btn.textContent = originalText; }, 2500);
+                        return true;
+
+                    } catch (innerE) {
+                        // Terakhir: Jika toDataURL masih gagal, berarti fatal.
+                        throw new Error("Export Canvas gagal. " + innerE.message);
+                    }
+
+                } catch (e) {
+                    console.error("PDF Fatal Error:", e);
+                    alert("Gagal PDF: " + e.message);
+                    if (btn) btn.textContent = "❌ Gagal";
+                    setTimeout(() => { if (btn) btn.textContent = originalText; }, 2000);
+                    return false;
+                } finally {
+                    if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                }
+            },
+
+            renderPayrollStats: () => {
+                const year = new Date().getFullYear();
+                const journals = DB.getAllJournals().filter(j =>
+                    j.date.startsWith(year) &&
+                    j.lines.some(l => l.account === '6-1000')
+                );
+
+                let totalGross = 0;
+                let totalTaxSim = 0;
+
+                // Simple assumption: 5% effective tax on all salaries above threshold
+                // For recap purpose, we just sum gross.
+                journals.forEach(j => {
+                    const l = j.lines.find(x => x.account === '6-1000');
+                    if (l) {
+                        const amt = l.debit;
+                        totalGross += amt;
+                        // Sim Tax: (Gross - 4.5jt) * 5% if pos
+                        const taxable = amt - 4500000;
+                        if (taxable > 0) totalTaxSim += (taxable * 0.05);
+                    }
+                });
+
+                document.getElementById('ytdGross').textContent = AccountingService.formatIDR(totalGross);
+                document.getElementById('ytdTax').textContent = AccountingService.formatIDR(totalTaxSim);
+            },
+
+            downloadPayrollRecap: () => {
+                const year = new Date().getFullYear();
+                const journals = DB.getAllJournals().filter(j =>
+                    j.date.startsWith(year) &&
+                    j.lines.some(l => l.account === '6-1000')
+                );
+
+                if (journals.length === 0) return alert("Data kosong.");
+
+                const rows = [['Tanggal', 'Masa Pajak', 'Deskripsi', 'Bruto (Gaji)', 'PPh 21 (Est)', 'Net Pay (Est)']];
+
+                journals.forEach(j => {
+                    const l = j.lines.find(x => x.account === '6-1000');
+                    const amt = l.debit;
+                    // Sim Tax
+                    const taxable = amt - 4500000;
+                    const tax = taxable > 0 ? (taxable * 0.05) : 0;
+                    const net = amt - tax;
+
+                    rows.push([
+                        j.date,
+                        j.date.substring(0, 7), // YYYY-MM
+                        j.desc,
+                        amt,
+                        Math.floor(tax),
+                        Math.floor(net)
+                    ]);
+                });
+
+                AccountingService.exportToCSV(`Rekap_Payroll_PPh21_${year}.csv`, rows);
+            },
+
+            // --- END PAYROLL ---
+
+            calcPPh23: () => {
+                const amt = parseFloat(document.getElementById('expAmount').value) || 0;
+                const isP23 = document.getElementById('pph23Fields').style.display !== 'none';
+
+                if (isP23) {
+                    const tax = Math.floor(amt * 0.02);
+                    const net = amt - tax;
+                    const fmt = AccountingService.formatIDR;
+
+                    document.getElementById('p23GrossDisp').textContent = fmt(amt);
+                    document.getElementById('p23TaxDisp').textContent = fmt(tax);
+                    document.getElementById('p23NetDisp').textContent = fmt(net);
+                }
+            },
+
+            saveExpense: async () => {
+                const date = document.getElementById('expDate').value;
+                const acc = document.getElementById('expAccount').value;
+                const desc = document.getElementById('expDesc').value;
+                const amt = parseFloat(document.getElementById('expAmount').value);
+
+                if (!date || !amt) return alert("Mohon lengkapi data (Tanggal & Nominal).");
+                if (!acc) return alert("Mohon pilih Akun Biaya.");
+
+                // PPh 23 Logic
+                const isP23 = document.getElementById('pph23Fields').style.display !== 'none';
+                const isPayroll = document.getElementById('payrollFields').style.display !== 'none';
+
+                try {
+                    let finalDesc = desc ? desc : "Biaya Operasional";
+
+                    // Logic Payroll: Append Emp Name
+                    if (isPayroll) {
+                        const empSel = document.getElementById('payEmployee');
+                        const empId = empSel.value;
+                        if (empId) {
+                            const empName = empSel.options[empSel.selectedIndex].text;
+                            // Format: "Gaji [Nama] - [Desc Original]"
+                            finalDesc = `Gaji ${empName}` + (desc ? ` (${desc})` : '');
+                        }
+                    }
+
+                    if (isP23) {
+                        const pName = document.getElementById('p23Name').value;
+                        const pNpwp = document.getElementById('p23Npwp').value;
+                        const pType = document.getElementById('p23Type').value;
+
+                        if (!pName) return alert("Nama Mitra wajib diisi untuk PPh 23!");
+
+                        // Override desc for PPh 23
+                        finalDesc = desc ? desc : "Biaya Jasa (PPh 23)";
+
+                        const tax = Math.floor(amt * 0.02);
+                        const net = amt - tax;
+
+                        // 1. Save to DB Tax Table
+                        const taxRec = {
+                            id: DB.generateId(),
+                            paymentDate: date,
+                            partnerName: pName,
+                            partnerNPWP: pNpwp,
+                            serviceType: pType,
+                            grossAmount: amt,
+                            pph23Rate: 0.02,
+                            pph23Amount: tax,
+                            ntpp: '', // Empty means unpaid to state
+                        };
+
+                        await DB.saveTax23Payment(taxRec);
+
+                        // 2. Custom Journal (Gross Expense, Tax Debt, Net Cash)
+                        const jId = DB.generateId();
+                        const entry = {
+                            id: jId,
+                            date: date,
+                            desc: `${finalDesc} (Mitra: ${pName})`,
+                            lines: [
+                                { account: acc, debit: amt, credit: 0 }, // Expense (Full)
+                                { account: '2-2200', debit: 0, credit: tax }, // Debt PPh 23
+                                { account: '1-1000', debit: 0, credit: net } // Cash (Net)
+                            ]
+                        };
+                        await DB.saveJournal(entry);
+                        alert(`Pengeluaran tersimpan dengan Potongan PPh 23 sebesar ${AccountingService.formatIDR(tax)}`);
+
+                        // Reset Extra Fields
+                        document.getElementById('p23Name').value = '';
+                        document.getElementById('p23Npwp').value = '';
+                        document.getElementById('pph23Fields').style.display = 'none';
+
+                    } else {
+                        // Standard Logic
+                        await AccountingService.recordExpense(date, acc, amt, finalDesc);
+                        alert("Pengeluaran tersimpan!");
+                    }
+
+                    document.getElementById('expAmount').value = '';
+                    document.getElementById('expDesc').value = '';
+                    document.getElementById('expAccount').value = ''; // Reset select
+
+
+                    accApp.renderReports();
+                } catch (e) {
+                    console.error("Expense Save Failed", e);
+                    alert("Gagal menyimpan data: " + e.message);
+                }
+            },
+
+            renderReports: () => {
+                const journals = DB.getAllJournals();
+
+                // RENDER PPH 23 LIST
+                accApp.renderPph23List();
+
+                // RENDER EXPENSE DETAIL LIST
+                accApp.renderExpenseList();
+
+                const type = document.getElementById('reportType').value;
+                const dateVal = document.getElementById('taxMonth').value;
+                let fMonth = null, fYear = null;
+
+                if (type === 'MONTH' && dateVal) {
+                    const [y, m] = dateVal.split('-');
+                    fMonth = parseInt(m); fYear = parseInt(y);
+                } else if (type === 'YEAR' && dateVal) {
+                    fYear = parseInt(dateVal.split('-')[0]);
+                }
+
+                const fmt = AccountingService.formatIDR;
+                const accName = (code) => {
+                    const all = [...COA.ASSETS, ...COA.LIABILITIES, ...COA.EQUITY, ...COA.REVENUE, ...COA.EXPENSES];
+                    const found = all.find(x => x.code === code);
+                    return found ? found.name : code;
+                };
+
+                // Income Statement
+                const incParams = AccountingService.getIncomeStatement(fMonth, fYear);
+                let incHtml = `<div class="report-row" style="font-weight:bold; color:var(--text-secondary)">PENDAPATAN</div>`;
+                Object.keys(incParams.details).forEach(k => {
+                    if (k.startsWith('4')) incHtml += `<div class="report-row">
+            <span>${accName(k)}</span><span>${fmt(incParams.details[k])}</span></div>`;
+                });
+                incHtml += `<div class="report-row" style="font-weight:bold; color:var(--text-secondary); margin-top:1rem;">
+            BEBAN</div>`;
+                Object.keys(incParams.details).forEach(k => {
+                    if (k.startsWith('6')) incHtml += `<div class="report-row">
+            <span>${accName(k)}</span><span>(${fmt(incParams.details[k])})</span></div>`;
+                });
+                document.getElementById('incomeContent').innerHTML = incHtml;
+                document.getElementById('netIncomeDisplay').textContent = fmt(incParams.netIncome);
+
+                // Balance Sheet
+                const bsParams = AccountingService.getBalanceSheet();
+                let astHtml = '';
+                Object.keys(bsParams.assets.accounts).forEach(k => {
+                    astHtml += `<div class="report-row">
+            <span>${accName(k)}</span><span>${fmt(bsParams.assets.accounts[k])}</span></div>`;
+                });
+                document.getElementById('assetsContent').innerHTML = astHtml;
+                document.getElementById('totalAssets').textContent = fmt(bsParams.assets.total);
+
+                let leHtml = '';
+                Object.keys(bsParams.liabilities.accounts).forEach(k => {
+                    leHtml += `<div class="report-row">
+            <span>${accName(k)}</span><span>${fmt(bsParams.liabilities.accounts[k])}</span></div>`;
+                });
+                Object.keys(bsParams.equity.accounts).forEach(k => {
+                    leHtml += `<div class="report-row">
+            <span>${accName(k)}</span><span>${fmt(bsParams.equity.accounts[k])}</span></div>`;
+                });
+                document.getElementById('liabEquityContent').innerHTML = leHtml;
+                document.getElementById('totalLiabEquity').textContent = fmt(bsParams.liabilities.total + bsParams.equity.total);
+
+                const bal = (bsParams.assets.total - (bsParams.liabilities.total + bsParams.equity.total));
+                const checkEl = document.getElementById('balanceCheck');
+                checkEl.textContent = Math.abs(bal) < 1 ? "✅ Neraca Seimbang" : "❌ TIDAK SEIMBANG (" + fmt(bal) + ")";
+                checkEl.style.color = Math.abs(bal) < 1 ? "var(--success)" : "var(--danger)";
+            }, renderExpenseList: () => {
+                const fmt = AccountingService.formatIDR;
+                const journals = DB.getAllJournals();
+                const expenses = journals.filter(j => j.lines.some(l => l.account.startsWith('6-') && l.debit > 0)).sort((a,
+                    b) => new Date(b.date) - new Date(a.date));
+                const tbody = document.getElementById('expenseTableBody');
+                tbody.innerHTML = '';
+                if (expenses.length === 0) {
+                    tbody.innerHTML = `<tr>
+                        <td colspan="5">Belum ada pengeluaran tercatat.</td>
+                    </tr>`;
+                    return;
+                }
+                expenses.forEach(exp => {
+                    const row = tbody.insertRow();
+                    row.insertCell().textContent = exp.date;
+                    row.insertCell().textContent = exp.lines.find(l => l.account.startsWith('6-'))?.account || 'N/A';
+                    row.insertCell().textContent = exp.desc;
+                    row.insertCell().textContent = fmt(exp.lines.find(l => l.account.startsWith('6-'))?.debit || 0);
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Hapus'; btn.className = 'btn btn-danger btn-sm';
+                    btn.onclick = () => accApp.deleteExpense(exp.id);
+                    row.insertCell().appendChild(btn);
+                });
+            },
+
+            deleteExpense: async (id) => {
+                if (confirm("Yakin ingin menghapus data ini?")) {
+                    try {
+                        await DB.deleteJournal(id);
+                        // Refresh UI secara eksplisit
+                        accApp.renderReports();
+                        if (typeof accApp.renderSalaryList === 'function') accApp.renderSalaryList();
+                        if (typeof accApp.renderPayrollStats === 'function') accApp.renderPayrollStats();
+                    } catch (e) {
+                        console.error(e);
+                        alert("Gagal update tampilan. Silakan refresh.");
+                    }
+                }
+            },
+
+            toggleExpenseList: () => {
+                const el = document.getElementById('expenseListContainer');
+                el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+            },
+
+            exportIncome: () => {
+                const rows = [['Akun', 'Nilai']];
+                // Simplify for CSV
+                const inc = AccountingService.getIncomeStatement();
+                Object.keys(inc.details).forEach(k => rows.push([k, inc.details[k]]));
+                rows.push(['Laba Bersih', inc.netIncome]);
+                AccountingService.exportToCSV("Laba_Rugi.csv", rows);
+            },
+
+            exportBalanceSheet: () => {
+                const rows = [['Akun', 'Nilai']];
+                const bs = AccountingService.getBalanceSheet();
+                Object.keys(bs.assets.accounts).forEach(k => rows.push([k, bs.assets.accounts[k]]));
+                Object.keys(bs.liabilities.accounts).forEach(k => rows.push([k, bs.liabilities.accounts[k]]));
+                AccountingService.exportToCSV("Neraca.csv", rows);
+            },
+
+            printReport: () => {
+                // Function to set Title then Print
+                const originalTitle = document.title;
+                const periodVal = document.getElementById('taxMonth').value;
+                let titleSuffix = "";
+                if (periodVal) {
+                    const [y, m] = periodVal.split('-');
+                    const monthName = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('id-ID', { month: 'long' });
+                    titleSuffix = ` ${monthName} ${y} `;
+                }
+                document.title = `Laporan Keuangan${titleSuffix} - Neoma Creative Hub`;
+                window.print();
+                setTimeout(() => { document.title = originalTitle; }, 3000);
+            },
+
+            renderPph23List: () => {
+                const container = document.getElementById('pph23List');
+                const list = DB.getTax23Payments().filter(t => !t.ntpp); // Only unpaid
+                const fmt = AccountingService.formatIDR;
+
+                if (list.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; color:var(--text-secondary); padding:1rem;">✅ Semua aman. Tidak ada kewajiban PPh 23 tertunda.</div>`;
+                    document.getElementById('pph23Alert').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('pph23Alert').innerHTML = `⚠️ Ada ${list.length} Kewajiban PPh 23 Belum Disetor ke Negara!`;
+                document.getElementById('pph23Alert').style.display = 'block';
+
+                let html = `<table style="width:100%; border-collapse:collapse; font-size:0.85rem;">`;
+                html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-secondary);">
+                <th style="text-align:left; padding:5px;">Mitra</th>
+                <th style="padding:5px;">Tanggal</th>
+                <th style="text-align:right; padding:5px;">PPh 23</th>
+                <th style="padding:5px;">Aksi</th>
+            </tr>`;
+
+                list.forEach(item => {
+                    html += `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:8px 5px;">
+                        <strong>${item.partnerName}</strong><br>
+                        <span style="font-size:0.75rem; color:var(--text-secondary);">${item.serviceType}</span>
+                    </td>
+                    <td style="padding:8px 5px;">${item.paymentDate}</td>
+                    <td style="text-align:right; padding:8px 5px; color:var(--danger); font-weight:bold;">
+                        ${fmt(item.pph23Amount)}</td>
+                    <td style="text-align:center; padding:8px 5px;">
+                        <button class="btn btn-secondary" style="font-size:0.7rem; padding:4px 8px;"
+                            onclick="accApp.inputNtpp('${item.id}')">Input NTPP</button>
+                        <button class="btn btn-danger" style="font-size:0.7rem; padding:4px 8px; margin-left: 5px;"
+                            onclick="accApp.deletePph23('${item.id}')">Hapus</button>
+                    </td>
+                </tr>
+                `;
+                });
+                html += `</table>`;
+                container.innerHTML = html;
+            },
+
+            inputNtpp: async (id) => {
+                const code = prompt("Masukkan Nomor Transaksi Penerimaan Negara (NTPP) / Bukti Setor:");
+                if (code) {
+                    const list = DB.getTax23Payments();
+                    const idx = list.findIndex(t => t.id === id);
+                    if (idx > -1) {
+                        list[idx].ntpp = code;
+                        await DB.saveTax23Payment(list[idx]);
+
+                        // Optional: Create Journal Payment PPh 23?
+                        // Debt PPh 23 (D) -> Cash (K)
+                        // Assuming payment is done NOW.
+                        const confirmPay = confirm("Buat jurnal pembayaran kas keluar untuk setoran pajak ini?");
+                        if (confirmPay) {
+                            const date = new Date().toISOString().split('T')[0];
+                            const jEntry = {
+                                id: DB.generateId(),
+                                date: date,
+                                desc: `Setor PPh 23(NTPP: ${code})`,
+                                lines: [
+                                    { account: '2-2200', debit: list[idx].pph23Amount, credit: 0 },
+                                    { account: '1-1000', debit: 0, credit: list[idx].pph23Amount }
+                                ]
+                            };
+                            await DB.saveJournal(jEntry);
+                        }
+
+                        accApp.renderReports();
+                    }
+                }
+            },
+
+            deletePph23: async (id) => {
+                if (confirm("Yakin ingin menghapus kewajiban pajak ini? Data Pengeluaran terkait juga akan dihapus.")) {
+                    try {
+                        // 1. Get Details First
+                        const taxItem = DB.getTax23Payments().find(t => t.id === id);
+
+                        // 2. Delete Related Journal (If Any)
+                        if (taxItem) {
+                            const journals = DB.getAllJournals();
+                            // Find journal that matches specific pattern created during save
+                            // Desc pattern: "... (Mitra: [Name])"
+                            const relatedJournal = journals.find(j =>
+                                j.desc.includes(`(Mitra: ${taxItem.partnerName})`) &&
+                                j.date === taxItem.paymentDate &&
+                                Math.abs(j.lines.find(l => l.credit > 0)?.credit - (taxItem.grossAmount - taxItem.pph23Amount)) < 100 // Amt Check (Loose)
+                            );
+
+                            if (relatedJournal) {
+                                await DB.deleteJournal(relatedJournal.id);
+                                console.log("Deleted Related Journal:", relatedJournal.id);
+                            } else {
+                                // Fallback: Try looser search if strict fail
+                                const looseJournal = journals.find(j =>
+                                    j.desc.includes(taxItem.partnerName) &&
+                                    j.date === taxItem.paymentDate
+                                );
+                                if (looseJournal) await DB.deleteJournal(looseJournal.id);
+                            }
+                        }
+
+                        // 3. Delete Tax Record
+                        await DB.deleteTax23Payment(id);
+
+                        accApp.renderReports();
+                        alert("Data Kewajiban Pajak & Pengeluaran berhasil dihapus.");
+                    } catch (e) {
+                        alert("Gagal menghapus: " + e.message);
+                    }
+                }
+            },
+
+            downloadTax23Recap: () => {
+                const list = DB.getTax23Payments();
+                if (list.length === 0) return alert("Belum ada data PPh 23.");
+
+                const rows = [['Tanggal', 'Mitra', 'NPWP', 'Jenis Jasa', 'Gross', 'PPh 23', 'NTPP']];
+                list.forEach(t => {
+                    rows.push([t.paymentDate, t.partnerName, t.partnerNPWP, t.serviceType, t.grossAmount, t.pph23Amount, t.ntpp
+                        || 'BELUM SETOR']);
+                });
+                AccountingService.exportToCSV("Rekap_PPh23.csv", rows);
+            },
+
+            downloadPDF: () => {
+                const type = document.getElementById('reportType').value;
+                const dateVal = document.getElementById('taxMonth').value;
+                let fMonth = null, fYear = null;
+                let periodStr = "Semua Periode";
+                if (type === 'MONTH' && dateVal) {
+                    const [y, m] = dateVal.split('-');
+                    fMonth = parseInt(m); fYear = parseInt(y);
+                    periodStr = new Date(y, m - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                } else if (type === 'YEAR' && dateVal) {
+                    fYear = parseInt(dateVal.split('-')[0]); periodStr = `Tahun ${fYear} `;
+                }
+                const fmt = AccountingService.formatIDR;
+                const accName = (code) => {
+                    const all = [...COA.ASSETS, ...COA.LIABILITIES, ...COA.EQUITY, ...COA.REVENUE, ...COA.EXPENSES];
+                    return (all.find(x => x.code === code)?.name) || code;
+                };
+                const inc = AccountingService.getIncomeStatement(fMonth, fYear);
+                const bs = AccountingService.getBalanceSheet();
+
+                const container = document.createElement('div');
+                container.style.padding = '30px'; container.style.color = 'black'; container.style.background = 'white';
+                container.style.fontFamily = 'sans-serif';
+
+                let incomeRows = '';
+                Object.keys(inc.details).forEach(k => {
+                    if (k.startsWith('4')) incomeRows += `<tr>
+                <td>${accName(k)}</td>
+                <td style="text-align:right">${fmt(inc.details[k])}</td>
+            </tr>`;
+                });
+                incomeRows += `<tr>
+                <td colspan="2" style="font-weight:bold; padding-top:10px;">BEBAN</td>
+            </tr>`;
+                Object.keys(inc.details).forEach(k => {
+                    if (k.startsWith('6')) incomeRows += `<tr>
+                <td>${accName(k)}</td>
+                <td style="text-align:right">(${fmt(inc.details[k])})</td>
+            </tr>`;
+                });
+
+                let assetRows = '';
+                Object.keys(bs.assets.accounts).forEach(k => assetRows += `<tr>
+                <td>${accName(k)}</td>
+                <td style="text-align:right">${fmt(bs.assets.accounts[k])}</td>
+            </tr>`);
+                let liabRows = '';
+                Object.keys(bs.liabilities.accounts).forEach(k => liabRows += `<tr>
+                <td>${accName(k)}</td>
+                <td style="text-align:right">${fmt(bs.liabilities.accounts[k])}</td>
+            </tr>`);
+                Object.keys(bs.equity.accounts).forEach(k => liabRows += `<tr>
+                <td>${accName(k)}</td>
+                <td style="text-align:right">${fmt(bs.equity.accounts[k])}</td>
+            </tr>`);
+
+                container.innerHTML = `
+            <div style="text-align:center; border-bottom:3px double #000; padding-bottom:10px; margin-bottom:20px;">
+                <h2 style="margin:0; text-transform:uppercase;">Neoma Creative Hub</h2>
+                <p style="margin:5px 0 0; font-size: 0.9rem;">Gedongan RW II, Kec. Baki, Sukoharjo</p>
+                <h3 style="margin:15px 0 5px; text-decoration: underline;">LAPORAN KEUANGAN</h3>
+                <p style="margin:0;">Periode: ${periodStr}</p>
+            </div>
+            <h4 style="border-bottom:1px solid #000; padding-bottom:5px;">I. LAPORAN LABA RUGI</h4>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.9rem;">
+                <tr style="font-weight:bold;">
+                    <td>PENDAPATAN</td>
+                    <td style="text-align:right"></td>
+                </tr> ${incomeRows}
+                <tr style="font-weight:bold; border-top:1px solid #000;">
+                    <td style="padding-top:5px;">LABA BERSIH</td>
+                    <td style="text-align:right; padding-top:5px;">${fmt(inc.netIncome)}</td>
+                </tr>
+            </table>
+            <h4 style="border-bottom:1px solid #000; padding-bottom:5px;">II. NERACA (POSISI KEUANGAN)</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                <tr>
+                    <td colspan="2" style="font-weight:bold; color:#000;">ASET</td>
+                </tr> ${assetRows}
+                <tr style="font-weight:bold; border-top:1px solid #000;">
+                    <td style="padding-top:5px;">TOTAL ASET</td>
+                    <td style="text-align:right; padding-top:5px;">${fmt(bs.assets.total)}</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-weight:bold; padding-top:15px;">KEWAJIBAN & EKUITAS</td>
+                </tr> ${liabRows}
+                <tr style="font-weight:bold; border-top:1px solid #000;">
+                    <td style="padding-top:5px;">TOTAL KEWAJIBAN & EKUITAS</td>
+                    <td style="text-align:right; padding-top:5px;">${fmt(bs.liabilities.total + bs.equity.total)}</td>
+                </tr>
+            </table>
+            <div style="margin-top:30px; text-align:right; font-size:0.8rem;">Dicetak pada: ${new
+                        Date().toLocaleString('id-ID')}</div>
+            `;
+                // Must append to body (hidden off-screen) to ensure keys/images render
+                container.style.position = 'absolute';
+                container.style.left = '-9999px';
+                container.style.top = '0';
+                container.style.width = '790px'; // A4 width approx in pixels
+                document.body.appendChild(container);
+
+                const opt = {
+                    margin: 10, filename: `Laporan_Keuangan_${periodStr.replace(/ /g, '_')} _Neoma.pdf`, image: {
+                        type: 'jpeg', quality: 0.98
+                    }, html2canvas: { scale: 2 }, jsPDF: {
+                        unit: 'mm', format: 'a4', orientation:
+                            'portrait'
+                    }
+                };
+
+                html2pdf().set(opt).from(container).save().then(() => {
+                    document.body.removeChild(container);
+                });
+            }
+        };
+
+        // Tax App Logic
+        const taxApp = {
+            init: () => {
+                const now = new Date();
+                let m = now.getMonth() + 1;
+                let y = now.getFullYear();
+                const mStr = String(m).padStart(2, '0');
+                document.getElementById('taxMonth').value = `${y}-${mStr}`;
+                taxApp.render();
+            },
+
+            render: () => {
+                const period = document.getElementById('taxMonth').value;
+                if (!period) return;
+                const [yStr, mStr] = period.split('-');
+                const y = parseInt(yStr);
+                const m = parseInt(mStr); // 1-12
+
+                // 1. Calculate Monthly Gross (Current Month)
+                const inc = AccountingService.getIncomeStatement(m, y);
+                let monthlyGross = 0;
+                Object.keys(inc.details).forEach(k => {
+                    if (k.startsWith('4')) monthlyGross += inc.details[k];
+                });
+
+                // 2. Calculate Cumulative Gross (Year-to-Date up to selected Month)
+                // We need to fetch ALL journals of this year, filter by Revenue (4-xxxx)
+                let cumulativeGross = 0;
+                const journals = DB.getAllJournals().filter(j => j.date.startsWith(String(y)));
+
+                journals.forEach(j => {
+                    const jDate = new Date(j.date);
+                    // Include if journal date is in this year AND month is <= selected month
+                    if (jDate.getMonth() + 1 <= m) {
+                        j.lines.forEach(l => {
+                            if (l.account.startsWith('4') && l.credit > 0) {
+                                cumulativeGross += l.credit;
+                            }
+                        });
+                    }
+                });
+
+                // 3. Apply PP 55/2022 Rule: Free Tax for first 500jt Turnover/Year for WPOP
+                const THRESHOLD = 500000000;
+                let taxableIncome = 0;
+                let tax = 0;
+                let note = "";
+
+                if (cumulativeGross <= THRESHOLD) {
+                    tax = 0;
+                    note = "Bebas Pajak (Omset < 500jt)";
+                } else {
+                    // Check if the threshold was crossed THIS MONTH or BEFORE
+                    const priorGross = cumulativeGross - monthlyGross;
+
+                    if (priorGross >= THRESHOLD) {
+                        // Already crossed before this month, fully taxable
+                        taxableIncome = monthlyGross;
+                        tax = Math.floor(taxableIncome * 0.005);
+                        note = "Kena Pajak Penuh (0.5%)";
+                    } else {
+                        // Crossed THIS month
+                        // Only the portion ABOVE 500jt is taxable
+                        taxableIncome = cumulativeGross - THRESHOLD;
+                        tax = Math.floor(taxableIncome * 0.005);
+                        note = "Kena Pajak Sebagian (Diatas 500jt)";
+                    }
+                }
+
+                const fmt = AccountingService.formatIDR;
+
+                // Update UI
+                document.getElementById('taxGross').textContent = fmt(monthlyGross);
+                document.getElementById('taxGross').title = `Kumulatif Thn ${y}: ${fmt(cumulativeGross)}`; // Tooltip info
+                document.getElementById('taxPayable').textContent = fmt(tax);
+
+                // Optional: Update Badge or add Note if UI supports it
+                const badge = document.getElementById('taxStatusBadge');
+                if (badge) {
+                    badge.textContent = tax === 0 ? "Bebas Pajak (PP 55)" : "PPh Final 0.5%";
+                    badge.className = tax === 0 ? "badge badge-success" : "badge badge-warning";
+                    // badge styling relies on css, assuming defaults or style overrides
+                    badge.style.background = tax === 0 ? "rgba(16, 185, 129, 0.2)" : "rgba(245, 158, 11, 0.2)";
+                    badge.style.color = tax === 0 ? "#10b981" : "#f59e0b";
+                }
+
+                // Due Date: 10th of Next Month
+                const due = new Date(y, m, 10);
+                document.getElementById('taxDueDate').textContent = due.toLocaleDateString('id-ID', {
+                    day: 'numeric', month:
+                        'long', year: 'numeric'
+                });
+            },
+
+            pay: () => {
+                alert("Fitur Pembayaran Integrasi Bank belum aktif.");
+            }
+        };
+
+        // Init All
+        document.addEventListener('DOMContentLoaded', () => {
+            accApp.init();
+            taxApp.init();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Invoice Generator</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <div class="container no-print">
+        <nav class="nav-bar"
+            style="margin-bottom: 2rem; background: var(--bg-card); padding: 1rem; border-radius: 8px; display: flex; gap: 1rem;">
+            <a href="dashboard.html" class="nav-link" style="color: var(--text-primary); text-decoration: none;">🏠
+                Dashboard</a>
+            <a href="reports.html" class="nav-link" style="color: var(--text-primary); text-decoration: none;">📊
+                Laporan</a>
+        </nav>
+
+        <header>
+            <h1>Quick Invoice & Trade</h1>
+            <p class="subtitle">Modul Pembuatan Invoice dan Nota Digital Cepat</p>
+        </header>
+
+        <div class="wizard-container" id="wizard">
+            <!-- Steps Indicator -->
+            <div class="steps-indicator" style="display:flex; gap:10px; margin-bottom:2rem; justify-content:center;">
+                <div class="step-dot active" data-step="1"
+                    style="width:10px; height:10px; border-radius:50%; background:var(--text-secondary);"></div>
+                <div class="step-dot" data-step="2"
+                    style="width:10px; height:10px; border-radius:50%; background:var(--bg-secondary); border:1px solid var(--text-secondary);">
+                </div>
+                <div class="step-dot" data-step="3"
+                    style="width:10px; height:10px; border-radius:50%; background:var(--bg-secondary); border:1px solid var(--text-secondary);">
+                </div>
+                <div class="step-dot" data-step="4"
+                    style="width:10px; height:10px; border-radius:50%; background:var(--bg-secondary); border:1px solid var(--text-secondary);">
+                </div>
+            </div>
+
+            <form id="wizardForm" onsubmit="return false;">
+
+                <!-- Step 1: Document Type -->
+                <div id="step1" class="step-content active">
+                    <h3 style="text-align:center; margin-bottom:1.5rem;">Pilih Jenis Dokumen</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="card-option" onclick="app.selectType('INVOICE', this)"
+                            style="padding:2rem; text-align:center; border:2px solid var(--bg-secondary); border-radius:12px; cursor:pointer; transition:all 0.2s;">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">📄</div>
+                            <strong>INVOICE</strong>
+                            <p style="font-size:0.8rem; color:var(--text-secondary)">Untuk pembayaran tempo /
+                                kredit.
+                            </p>
+                        </div>
+                        <div class="card-option" onclick="app.selectType('NOTA', this)"
+                            style="padding:2rem; text-align:center; border:2px solid var(--bg-secondary); border-radius:12px; cursor:pointer; transition:all 0.2s;">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">🧾</div>
+                            <strong>NOTA KONTAN</strong>
+                            <p style="font-size:0.8rem; color:var(--text-secondary)">Untuk pembayaran tunai
+                                langsung.
+                            </p>
+                        </div>
+                    </div>
+                    <style>
+                        .card-option:hover {
+                            border-color: var(--accent-color) !important;
+                            background: var(--bg-secondary);
+                        }
+
+                        .card-option.selected {
+                            border-color: var(--accent-color) !important;
+                            background: rgba(56, 189, 248, 0.1) !important;
+                        }
+                    </style>
+                </div>
+
+                <!-- Step 2: Customer Info -->
+                <div id="step2" class="step-content">
+                    <h3>Data Pelanggan</h3>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label style="display:block; margin-bottom:0.5rem;">Nama Klien / Perusahaan</label>
+                        <input type="text" id="custName" class="form-input"
+                            style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white;"
+                            placeholder="Contoh: PT. Maju Mundur">
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label style="display:block; margin-bottom:0.5rem;">Nomor WhatsApp (62..)</label>
+                        <input type="number" id="custPhone" class="form-input"
+                            style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white;"
+                            placeholder="Contoh: 628123456789">
+                    </div>
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label style="display:block; margin-bottom:0.5rem;">Alamat Lengkap (Opsional)</label>
+                        <textarea id="custAddress" class="form-input"
+                            style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white;"
+                            rows="3" placeholder="Alamat penagihan..."></textarea>
+                    </div>
+                    <div id="dueDateGroup" class="form-group" style="margin-bottom:1rem;">
+                        <label style="display:block; margin-bottom:0.5rem;">Jatuh Tempo Invoice</label>
+                        <input type="date" id="dueDate" class="form-input"
+                            style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white;">
+                    </div>
+                </div>
+
+                <!-- Step 3: Service & Amount -->
+                <div id="step3" class="step-content">
+                    <h3>Detail Layanan & Pembayaran</h3>
+
+                    <!-- Item Input Form -->
+                    <div
+                        style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; margin-bottom:1rem;">
+                        <div class="form-group" style="margin-bottom:0.8rem;">
+                            <label
+                                style="display:block; margin-bottom:0.4rem; font-size:0.9rem; color:var(--text-secondary);">Template
+                                Jasa (Opsional)</label>
+                            <select id="serviceSelect" onchange="app.fillDescription()"
+                                style="width:100%; padding:0.6rem; border-radius:6px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white; font-size:0.9rem;">
+                                <option value="">-- Pilih Template --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0.8rem;">
+                            <input type="text" id="itemDesc" placeholder="Deskripsi Item / Jasa" class="form-input"
+                                style="width:100%; padding:0.8rem; border-radius:6px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white;">
+                        </div>
+
+                        <div
+                            style="display:grid; grid-template-columns: 100px 1fr; gap:1rem; align-items:end; margin-bottom:1rem;">
+                            <div>
+                                <label
+                                    style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Qty</label>
+                                <input type="number" id="itemQty" value="1" min="1" class="form-input"
+                                    style="width:100%; padding:0.8rem; border-radius:6px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white; text-align:center; font-weight:bold;">
+                            </div>
+                            <div>
+                                <label
+                                    style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:4px;">Harga
+                                    Satuan (Rp)</label>
+                                <input type="number" id="itemPrice" placeholder="0" class="form-input"
+                                    style="width:100%; padding:0.8rem; border-radius:6px; border:1px solid var(--text-secondary); background:var(--bg-secondary); color:white;">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary"
+                            style="width:100%; padding:0.8rem; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:0.5rem;"
+                            onclick="app.addItem()">
+                            <span>➕</span> Tambah Item
+                        </button>
+                    </div>
+
+                    <!-- Items List -->
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block; margin-bottom:0.5rem;">Daftar Item:</label>
+                        <div id="itemList"
+                            style="min-height:50px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.5rem;">
+                            <div
+                                style="text-align:center; color:var(--text-secondary); font-size:0.8rem; padding:1rem;">
+                                Belum ada item ditambahkan.</div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="text-align:right; font-size:1.2rem; font-weight:bold; border-top:1px solid rgba(255,255,255,0.2); padding-top:0.5rem;">
+                        Total: <span id="displayTotal" style="color:var(--accent-color)">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Step 4: Summary -->
+                <div id="step4" class="step-content">
+                    <h3>Konfirmasi Data</h3>
+                    <div style="background:var(--bg-secondary); padding:1.5rem; border-radius:8px; margin-bottom:1rem;">
+                        <div style="margin-bottom:0.5rem;"><strong>Tipe:</strong> <span id="summType"></span></div>
+                        <div style="margin-bottom:0.5rem;"><strong>Klien:</strong> <span id="summName"></span></div>
+                        <div style="margin-bottom:0.5rem;"><strong>Item:</strong> <span id="summItemCount">0
+                                Item</span>
+                        </div>
+                        <div
+                            style="font-size:1.2rem; margin-top:1rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:0.5rem;">
+                            <strong>Grand Total:</strong> <span id="summTotal" style="color:var(--accent-color)"></span>
+                        </div>
+                    </div>
+                    <p style="font-size:0.9rem; color:var(--text-secondary); text-align:center;">
+                        Pastikan data sudah benar. Dokumen yang sudah dibuat tidak dapat diedit kembali (hanya bisa
+                        dibatalkan).
+                    </p>
+                </div>
+
+                <style>
+                    .step-content {
+                        display: none;
+                        animation: fadeIn 0.3s;
+                    }
+
+                    .step-content.active {
+                        display: block;
+                    }
+
+                    .step-dot.active {
+                        background: var(--accent-color) !important;
+                        box-shadow: 0 0 10px var(--accent-color);
+                        border: none !important;
+                    }
+
+                    @keyframes fadeIn {
+                        from {
+                            opacity: 0;
+                            transform: translateY(10px);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                </style>
+
+                <!-- Navigation -->
+                <div class="btn-group" style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" id="btnPrev" style="display:none"
+                        onclick="app.prevStep()">Kembali</button>
+                    <button type="button" class="btn btn-primary" id="btnNext" onclick="app.nextStep()">Lanjut</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmit" style="display:none"
+                        onclick="app.generate()">Buat
+                        Dokumen</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Action Buttons after generation -->
+        <!-- PDF Generation Lib -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+        <div id="app-container">
+            <!-- ... -->
+            <!-- Action Buttons after generation -->
+            <div id="postActions" style="display:none; text-align: center; margin-top: 2rem;">
+                <div
+                    style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--success);">
+                    <h3 style="color: var(--success); margin-bottom: 0.5rem;">🎉 Dokumen Berhasil Dibuat!</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Transaksi telah tercatat otomatis ke
+                        dalam
+                        sistem akuntansi.</p>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="app.downloadPDF()">⬇️ Download PDF</button>
+                    <button class="btn btn-secondary" style="border-color:#25D366; color:#25D366"
+                        onclick="app.shareToWA()">📱
+                        Kirim WA</button>
+                    <button class="btn btn-secondary" style="border-color:#ea4335; color:#ea4335"
+                        onclick="app.shareToEmail()">📧 Kirim Email</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Buat Baru</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Generated Invoice View -->
+        <div id="preview-container" style="max-width: 800px; margin: 2rem auto; position: relative;">
+            <!-- Clean Print Styles -->
+            <style>
+                @media print {
+                    @page {
+                        margin: 0;
+                        size: auto;
+                    }
+
+                    body * {
+                        visibility: hidden;
+                    }
+
+                    #preview-container,
+                    #preview-container * {
+                        visibility: visible;
+                    }
+
+                    #preview-container {
+                        position: fixed;
+                        /* Fixed to ensure it stays on page 1 */
+                        left: 0;
+                        top: 0;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        margin: 0 !important;
+                        padding: 20px !important;
+                        background: white;
+                        box-shadow: none !important;
+                        z-index: 9999;
+                    }
+
+                    /* Ensure Title is Visible (Redundant safety) */
+                    #outTitle {
+                        color: #2563eb !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* Hide non-printable elements explicitly if needed */
+                    .no-print,
+                    button,
+                    .btn {
+                        display: none !important;
+                    }
+                }
+
+                .invoice-box {
+                    background: white;
+                    border-radius: 16px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                    color: #334155;
+                    font-family: 'Inter', sans-serif;
+                    overflow: hidden;
+                }
+
+                .inv-header-bar {
+                    height: 12px;
+                    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+                    width: 100%;
+                }
+
+                .inv-content {
+                    padding: 3rem;
+                }
+
+                .inv-top {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 3rem;
+                }
+
+                .inv-logo img {
+                    height: 60px;
+                    margin-bottom: 1rem;
+                }
+
+                .inv-meta-grid {
+                    display: grid;
+                    grid-template-columns: 1.5fr 1fr;
+                    gap: 2rem;
+                    margin-bottom: 3rem;
+                }
+
+                .inv-label {
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #64748b;
+                    font-weight: 600;
+                    margin-bottom: 0.5rem;
+                }
+
+                .inv-value {
+                    font-size: 1rem;
+                    color: #1e293b;
+                    font-weight: 500;
+                    line-height: 1.5;
+                }
+
+                .inv-table-wrapper {
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    margin-bottom: 2rem;
+                }
+
+                .inv-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                .inv-table th {
+                    background: #f8fafc;
+                    padding: 1rem 1.5rem;
+                    text-align: left;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #475569;
+                    font-weight: 600;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+
+                .inv-table td {
+                    padding: 1.25rem 1.5rem;
+                    border-bottom: 1px solid #f1f5f9;
+                    vertical-align: top;
+                }
+
+                .inv-table tr:last-child td {
+                    border-bottom: none;
+                }
+
+                .inv-total-box {
+                    display: flex;
+                    justify-content: flex-end;
+                    margin-top: 1rem;
+                }
+
+                .inv-total-inner {
+                    text-align: right;
+                    background: #f8fafc;
+                    padding: 1.5rem 2rem;
+                    border-radius: 12px;
+                    min-width: 300px;
+                }
+
+                .inv-grand-total {
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    color: #0f172a;
+                    margin-top: 0.5rem;
+                }
+
+                .inv-footer {
+                    margin-top: 4rem;
+                    text-align: center;
+                    border-top: 1px dashed #e2e8f0;
+                    padding-top: 2rem;
+                    color: #64748b;
+                    font-size: 0.9rem;
+                }
+            </style>
+
+            <div class="invoice-box">
+                <div class="inv-header-bar"></div>
+                <div class="inv-content">
+                    <!-- Top Header -->
+                    <div class="inv-top">
+                        <div class="inv-company">
+                            <div class="inv-logo">
+                                <img src="../assets/neoma-logo.png" alt="Neoma Logo">
+                            </div>
+                            <div style="font-size: 0.9rem; color: #64748b; line-height: 1.5;">
+                                <strong>Neoma Creative Hub</strong><br>
+                                Gedongan RW II, Kec. Baki,<br>
+                                Sukoharjo, Jawa Tengah 57556<br>
+                                NIB: 1234567890
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <h1 id="outTitle"
+                                style="font-size: 3rem; margin:0; color: #3b82f6; letter-spacing: -0.02em;">
+                                INVOICE</h1>
+                            <p id="outRef"
+                                style="font-size: 1.1rem; color: #64748b; margin: 0.5rem 0 0 0; font-family: monospace;">
+                                #INV-2023-001</p>
+                            <div style="margin-top: 1rem;">
+                                <span id="outStatus" class="status-badge"
+                                    style="font-size: 0.8rem; padding: 0.4rem 1rem;">BELUM BAYAR</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Grid -->
+                    <div class="inv-meta-grid">
+                        <div>
+                            <div class="inv-label">Kepada</div>
+                            <div id="outCustomerName" class="inv-value" style="font-weight: 700; font-size: 1.1rem;">
+                                Nama
+                                Klien</div>
+                            <div id="outCustomerAddr" class="inv-value"
+                                style="color: #64748b; font-size: 0.95rem; white-space: pre-wrap;">Alamat Klien
+                            </div>
+                        </div>
+                        <div style="text-align: right; display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <div class="inv-label">Tanggal Terbit</div>
+                                <div id="outDate" class="inv-value">01 Januari 2025</div>
+                            </div>
+                            <div id="dueContainer" style="display:none">
+                                <div class="inv-label" style="color: #ef4444;">Jatuh Tempo</div>
+                                <div id="outDue" class="inv-value" style="color: #ef4444;">01 Januari 2025</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="inv-table-wrapper">
+                        <table class="inv-table invoice-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60%;">Deskripsi Layanan</th>
+                                    <th style="text-align: right;">Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Items Injected Here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="inv-total-box">
+                        <div class="inv-total-inner">
+                            <div class="inv-label" style="margin-bottom: 0;">Total Tagihan</div>
+                            <div id="outGrandTotal" class="inv-grand-total">Rp 0</div>
+                            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; font-style: italic;">
+                                *Termasuk PPh Final 0.5%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="inv-footer">
+                        <p style="margin-bottom: 0.5rem; font-weight: 500;">Terima kasih atas kepercayaan Anda.</p>
+                        <p>Pembayaran dapat ditransfer ke <strong>BCA 1234567890</strong> a.n <strong>Henri
+                                Susilo</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATABASE MODULES (Split) -->
+        <script src="../../backend/models/db-config.js"></script>
+        <script src="../../backend/models/db-core.js"></script>
+        <script src="../../backend/models/db-finance.js"></script>
+        <script src="../../backend/models/db-contacts.js"></script>
+        <script src="../../backend/controllers/accounting.js?v=nuclear1"></script>
+        <script src="../js/apps-invoice.js"></script>
+</body>
+
+</html>

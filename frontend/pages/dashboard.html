@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neoma Creative Hub</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="hero-section">
+            <h1 class="hero-title">Neoma Creative Hub <span
+                    style="font-size:1rem; opacity:0.5; vertical-align:middle;">v3.2</span></h1>
+            <p class="hero-subtitle">Dashboard Monitoring Keuangan & Operasional • System Ready</p>
+        </div>
+
+
+        <!-- Main Content -->
+        <div class="main-dashboard-grid">
+
+            <!-- LEFT COLUMN -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                <!-- 1. Keuangan -->
+                <div class="stat-card">
+                    <div class="stat-label">Keuangan (Finance)</div>
+                    <div style="margin-top: 1rem;">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Laba Bersih (Net Income)</div>
+                        <div class="stat-value" id="dispNetIncome" style="color: #34d399; font-size: 1.6rem;">Rp 0</div>
+                    </div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Saldo Kas Tunai</div>
+                        <div class="stat-value" id="dispCash" style="color: #60a5fa; font-size: 1.4rem;">Rp 0</div>
+                    </div>
+                </div>
+
+                <!-- 2. Menu Buttons (Invoice | Laporan) -->
+                <div class="sub-grid-2">
+                    <a href="invoice-v2.html" class="menu-card primary">
+                        <div class="menu-content">
+                            <div class="menu-icon" style="margin-bottom:0.5rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                                </svg>
+                            </div>
+                            <div class="menu-title" style="font-size:1.1rem; line-height:1.2; margin-bottom:4px;">Buat
+                                Invoice</div>
+                            <div class="menu-desc" style="font-size:0.8rem; opacity:0.8;">Input project baru</div>
+                        </div>
+                        <div class="menu-arrow">→</div>
+                    </a>
+                    <a href="reports.html" class="menu-card secondary">
+                        <div class="menu-content">
+                            <div class="menu-icon" style="margin-bottom:0.5rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </div>
+                            <div class="menu-title" style="font-size:1.1rem; line-height:1.2; margin-bottom:4px;">
+                                Laporan Keuangan</div>
+                            <div class="menu-desc" style="font-size:0.8rem; opacity:0.8;">Cek profit & cashflow</div>
+                        </div>
+                        <div class="menu-arrow">→</div>
+                    </a>
+                </div>
+
+                <!-- 3. Data Center -->
+                <div class="menu-card"
+                    style="background: linear-gradient(135deg, #334155 0%, #1e293b 100%); cursor: default; transform: none; padding: 1.5rem;">
+                    <div
+                        style="position: relative; z-index: 2; display:flex; justify-content:space-between; align-items:center; width:100%; height: 100%; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display:flex; align-items:center; gap:1.2rem;">
+                            <div class="menu-icon"
+                                style="margin:0; font-size:2rem; background: rgba(255,255,255,0.1); width: 48px; height: 48px; display:flex; align-items:center; justify-content:center; border-radius:12px;">
+                                💾</div>
+                            <div>
+                                <div class="menu-title" style="font-size:1.1rem; margin-bottom: 4px;">Data Center</div>
+                                <div class="menu-desc" style="font-size:0.85rem; color:#94a3b8;">Amanin data keuanganmu.
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.8rem; align-items: center;">
+                            <!-- Manual Sync -->
+                            <button onclick="manualSync()" class="btn"
+                                style="background:rgba(249, 115, 22, 0.1); border:1px solid rgba(249, 115, 22, 0.4); color:#fb923c; font-size:0.85rem; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                <span>🔄</span> Sync Cloud
+                            </button>
+
+                            <button onclick="dash.backupData()" class="btn"
+                                style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; font-size:0.85rem; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer;">⬇️
+                                Backup</button>
+                            <button onclick="document.getElementById('fileRestore').click()" class="btn"
+                                style="background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.4); color:#34d399; font-size:0.85rem; padding:0.6rem 1.2rem; border-radius:8px; cursor:pointer;">📂
+                                Upload Restore</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                <!-- 1. Omset -->
+                <div class="stat-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="stat-label">Omset vs Target</div>
+                        <button style="background:none; border:none; color:var(--text-secondary); cursor:pointer;"
+                            onclick="dash.setTarget()">⚙️ Set Target</button>
+                    </div>
+                    <div class="stat-value" id="dispRevenue">Rp 0</div>
+                    <div style="font-size: 0.8rem; display: flex; justify-content: space-between;">
+                        <span id="txtTarget">Target: Rp 10.000.000</span>
+                        <span id="txtPersen">0%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Riwayat Transaksi -->
+                <div id="historySection" class="stat-card"
+                    style="display: flex; flex-direction: column; flex-grow: 1; min-height: 300px;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+                        <div class="stat-label">Riwayat Transaksi</div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <input type="text" id="searchHistory" placeholder="Cari..." onkeyup="dash.renderHistory()"
+                                style="padding:0.4rem; border-radius:6px; border:1px solid #334155; background:var(--bg-primary); color:white; font-size:0.8rem; width:100px;">
+                            <button onclick="location.reload()" style="background:none; border:none; cursor:pointer;"
+                                title="Refresh">🔄</button>
+                        </div>
+                    </div>
+                    <div id="historyContainer"
+                        style="overflow-y:auto; flex-grow:1; padding-right:5px; max-height: 400px;">
+                        <!-- Populated by JS -->
+                        <div style="color:var(--text-secondary); text-align:center; font-size:0.9rem;">Memuat...</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ACTION CENTER (Full Width Bottom) -->
+        <div class="stat-card" style="padding: 0; border: 1px solid var(--danger);">
+            <div
+                style="padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.2);">
+                <h3 style="color: #fca5a5; margin:0;">⚡ ACTION CENTER: PRIORITAS HARI INI</h3>
+            </div>
+            <div id="checklistContainer">
+                <!-- Items populated by JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Hidden Input for Restore -->
+    <input type="file" id="fileRestore" accept=".json" style="display:none" onchange="dash.restoreData(this)">
+
+    <!-- Follow Up Modal -->
+    <div id="followUpModal" class="modal-overlay">
+        <div class="modal-box" style="position:relative;">
+            <button class="close-modal"
+                onclick="document.getElementById('followUpModal').style.display='none'">&times;</button>
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="font-size: 2.5rem; margin-bottom:0.5rem;">💸</div>
+                <h2 style="font-size: 1.5rem; font-weight:700; color:white; margin:0;">Tagih Pelanggan</h2>
+                <p style="color: #94a3b8; font-size:0.9rem;">Kirim peringatan mesra ke pelanggan pelupa.</p>
+            </div>
+            <div id="fuList" style="max-height: 300px; overflow-y: auto;">
+                <!-- JS populated -->
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="../js/auth.js"></script>
+    <!-- DATABASE MODULES (Split) -->
+    <script src="../../backend/models/db-config.js?v=fixed"></script>
+    <script src="../../backend/models/db-core.js?v=fixed"></script>
+    <script src="../../backend/models/db-finance.js?v=fixed"></script>
+    <script src="../../backend/models/db-contacts.js?v=fixed"></script>
+    <script src="../../backend/controllers/accounting.js?v=final-rev-4"></script>
+
+    <!-- Main Dashboard Controller -->
+    <script src="../js/dashboard.js?v=final-rev-4"></script>
+
+</body>
+
+</html>

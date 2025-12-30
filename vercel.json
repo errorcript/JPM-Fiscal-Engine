@@ -1,0 +1,44 @@
+{
+    "version": 2,
+    "rewrites": [
+        {
+            "source": "/",
+            "destination": "/frontend/pages/dashboard.html"
+        },
+        {
+            "source": "/dashboard",
+            "destination": "/frontend/pages/dashboard.html"
+        },
+        {
+            "source": "/reports",
+            "destination": "/frontend/pages/reports.html"
+        },
+        {
+            "source": "/invoice",
+            "destination": "/frontend/pages/invoice-v2.html"
+        },
+        {
+            "source": "/assets/(.*)",
+            "destination": "/frontend/assets/$1"
+        },
+        {
+            "source": "/js/(.*)",
+            "destination": "/frontend/js/$1"
+        },
+        {
+            "source": "/backend/(.*)",
+            "destination": "/backend/$1"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate"
+                }
+            ]
+        }
+    ]
+}

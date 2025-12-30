@@ -1,0 +1,21 @@
+{
+    "name": "neoma-invoice-system",
+    "version": "1.0.1",
+    "description": "Sistem Invoice & Akuntansi Sederhana untuk UMKM",
+    "main": "index.html",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "invoice",
+        "accounting",
+        "umkm",
+        "neoma"
+    ],
+    "author": "Neoma Creative",
+    "license": "ISC",
+    "dependencies": {
+        "@supabase/supabase-js": "^2.39.0",
+        "html2pdf.js": "^0.10.1"
+    }
+}
